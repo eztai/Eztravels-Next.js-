@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { View, ScrollView, StyleSheet } from 'react-native';
+import { View, ScrollView, StyleSheet } from 'react-native-web';
 import Header from '@/components/Header';
 import Dashboard from '@/components/Dashboard';
 import TripList from '@/components/TripList';
