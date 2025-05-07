@@ -1,8 +1,10 @@
 
 import React from 'react';
+import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Calendar as CalendarIcon, Clock, MapPin } from 'lucide-react';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 // Sample calendar events
 const events = [
@@ -18,6 +20,7 @@ const events = [
 
 const Calendar: React.FC = () => {
   const [date, setDate] = React.useState<Date | undefined>(new Date());
+  const isMobile = useIsMobile();
   
   // Filter events for the selected date
   const selectedDateEvents = events.filter(
@@ -44,11 +47,11 @@ const Calendar: React.FC = () => {
   };
   
   return (
-    <div id="calendar" className="py-8">
-      <h2 className="text-2xl font-bold mb-6">Trip Calendar</h2>
+    <View style={styles.container} id="calendar">
+      <Text style={styles.heading}>Trip Calendar</Text>
       
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="md:col-span-1">
+      <View style={isMobile ? styles.gridMobile : styles.grid}>
+        <Card className={isMobile ? "w-full" : "md:col-span-1"}>
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
               <CalendarIcon className="h-4 w-4" /> Calendar
@@ -74,24 +77,24 @@ const Calendar: React.FC = () => {
                 }
               }}
             />
-            <div className="mt-4 flex items-center justify-between text-sm text-muted-foreground">
-              <div className="flex items-center gap-1">
-                <div className="w-3 h-3 rounded-full bg-primary"></div>
-                <span>Travel</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <div className="w-3 h-3 rounded-full bg-secondary"></div>
-                <span>Accommodation</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <div className="w-3 h-3 rounded-full bg-accent"></div>
-                <span>Activity</span>
-              </div>
-            </div>
+            <View style={styles.legendContainer}>
+              <View style={styles.legendItem}>
+                <View style={[styles.legendDot, styles.travelDot]} />
+                <Text style={styles.legendText}>Travel</Text>
+              </View>
+              <View style={styles.legendItem}>
+                <View style={[styles.legendDot, styles.accommodationDot]} />
+                <Text style={styles.legendText}>Accommodation</Text>
+              </View>
+              <View style={styles.legendItem}>
+                <View style={[styles.legendDot, styles.activityDot]} />
+                <Text style={styles.legendText}>Activity</Text>
+              </View>
+            </View>
           </CardContent>
         </Card>
         
-        <Card className="md:col-span-2">
+        <Card className={isMobile ? "w-full mt-4" : "md:col-span-2"}>
           <CardHeader>
             <CardTitle className="text-lg">
               {date ? date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }) : 'Select a date'}
@@ -99,36 +102,122 @@ const Calendar: React.FC = () => {
           </CardHeader>
           <CardContent>
             {selectedDateEvents.length > 0 ? (
-              <div className="space-y-4">
+              <ScrollView style={styles.eventsList}>
                 {selectedDateEvents.map(event => (
-                  <div 
+                  <View 
                     key={event.id} 
+                    style={styles.eventCard}
                     className={`p-3 rounded-lg ${getEventClass(event.type)} flex flex-col`}
                   >
-                    <div className="font-medium">{event.title}</div>
-                    <div className="flex items-center gap-4 mt-2 text-sm">
-                      <div className="flex items-center gap-1">
-                        <Clock className="h-3 w-3" />
-                        <span>{event.time}</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <MapPin className="h-3 w-3" />
-                        <span>{event.location}</span>
-                      </div>
-                    </div>
-                  </div>
+                    <Text style={styles.eventTitle}>{event.title}</Text>
+                    <View style={styles.eventDetails}>
+                      <View style={styles.eventDetail}>
+                        <Clock style={styles.eventIcon} />
+                        <Text style={styles.eventDetailText}>{event.time}</Text>
+                      </View>
+                      <View style={styles.eventDetail}>
+                        <MapPin style={styles.eventIcon} />
+                        <Text style={styles.eventDetailText}>{event.location}</Text>
+                      </View>
+                    </View>
+                  </View>
                 ))}
-              </div>
+              </ScrollView>
             ) : (
-              <div className="text-center py-12 text-muted-foreground">
-                <p>No events scheduled for this day</p>
-              </div>
+              <View style={styles.noEvents}>
+                <Text style={styles.noEventsText}>No events scheduled for this day</Text>
+              </View>
             )}
           </CardContent>
         </Card>
-      </div>
-    </div>
+      </View>
+    </View>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    paddingVertical: 32,
+  },
+  heading: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 24,
+  },
+  grid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 24,
+  },
+  gridMobile: {
+    flexDirection: 'column',
+  },
+  legendContainer: {
+    marginTop: 16,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  legendItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  legendDot: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+  },
+  travelDot: {
+    backgroundColor: 'var(--primary)',
+  },
+  accommodationDot: {
+    backgroundColor: 'var(--secondary)',
+  },
+  activityDot: {
+    backgroundColor: 'var(--accent)',
+  },
+  legendText: {
+    fontSize: 14,
+    color: 'var(--muted-foreground)',
+  },
+  eventsList: {
+    gap: 16,
+    maxHeight: 400,
+  },
+  eventCard: {
+    marginBottom: 16,
+    padding: 12,
+    borderRadius: 8,
+  },
+  eventTitle: {
+    fontWeight: '500',
+  },
+  eventDetails: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 16,
+    marginTop: 8,
+  },
+  eventDetail: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  eventIcon: {
+    width: 12,
+    height: 12,
+  },
+  eventDetailText: {
+    fontSize: 14,
+  },
+  noEvents: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 48,
+  },
+  noEventsText: {
+    color: 'var(--muted-foreground)',
+  },
+});
 
 export default Calendar;
