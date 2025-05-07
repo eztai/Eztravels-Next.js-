@@ -59,11 +59,11 @@ const Calendar: React.FC = () => {
               mode="single"
               selected={date}
               onSelect={setDate}
-              className="rounded-md border"
+              className="rounded-md border pointer-events-auto"
               modifiers={{
                 eventDay: (day) => 
                   eventDates.some(eventDate => 
-                    eventDate.toDateString() === day.toDate().toDateString()
+                    eventDate.toDateString() === day.toDateString()
                   )
               }}
               modifiersStyles={{
