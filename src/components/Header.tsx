@@ -8,7 +8,7 @@ const Header: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md shadow-sm">
+    <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md shadow-sm border-b md:bg-white/80">
       <div className="container mx-auto px-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Compass className="h-6 w-6 text-primary" />
@@ -55,21 +55,21 @@ const Header: React.FC = () => {
 
       {/* Mobile Menu */}
       {isMenuOpen && (
-        <div className="md:hidden bg-white border-t">
+        <div className="md:hidden bg-white/98 backdrop-blur-md border-t shadow-lg">
           <div className="container mx-auto px-4 py-4 space-y-4">
-            <a href="#dashboard" className="flex items-center gap-2 p-2 rounded-md hover:bg-muted transition-colors">
+            <a href="#dashboard" className="flex items-center gap-2 p-3 rounded-md hover:bg-muted transition-colors">
               <Compass className="h-5 w-5 text-primary" /> Dashboard
             </a>
-            <a href="#trips" className="flex items-center gap-2 p-2 rounded-md hover:bg-muted transition-colors">
+            <a href="#trips" className="flex items-center gap-2 p-3 rounded-md hover:bg-muted transition-colors">
               <PlusCircle className="h-5 w-5 text-primary" /> My Trips
             </a>
-            <a href="#budget" className="flex items-center gap-2 p-2 rounded-md hover:bg-muted transition-colors">
+            <a href="#budget" className="flex items-center gap-2 p-3 rounded-md hover:bg-muted transition-colors">
               <Calendar className="h-5 w-5 text-primary" /> Budget
             </a>
-            <a href="#calendar" className="flex items-center gap-2 p-2 rounded-md hover:bg-muted transition-colors">
+            <a href="#calendar" className="flex items-center gap-2 p-3 rounded-md hover:bg-muted transition-colors">
               <Calendar className="h-5 w-5 text-primary" /> Calendar
             </a>
-            <a href="#assistant" className="flex items-center gap-2 p-2 rounded-md hover:bg-muted transition-colors">
+            <a href="#assistant" className="flex items-center gap-2 p-3 rounded-md hover:bg-muted transition-colors">
               <MessageSquare className="h-5 w-5 text-primary" /> Assistant
             </a>
             <div className="flex items-center gap-2 pt-4 border-t">
