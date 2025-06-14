@@ -1,9 +1,9 @@
 
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { CalendarDays, MapPin, Users, DollarSign, Plus, Calendar } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
@@ -72,6 +72,7 @@ const savedLocations = [
 ];
 
 const MyTripsPage: React.FC = () => {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('current');
 
   const formatDate = (dateString: string) => {
@@ -141,7 +142,7 @@ const MyTripsPage: React.FC = () => {
           <h1 className="text-3xl font-bold">My Trips</h1>
           <p className="text-muted-foreground">Manage your travel adventures</p>
         </div>
-        <Button className="gap-2">
+        <Button className="gap-2" onClick={() => navigate('/trips/new')}>
           <Plus className="h-4 w-4" />
           New Trip
         </Button>
