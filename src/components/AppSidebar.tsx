@@ -70,7 +70,7 @@ export function AppSidebar() {
 
   return (
     <Sidebar className="border-r">
-      <SidebarHeader className="p-4">
+      <SidebarHeader className="p-4 pb-2">
         <div className="flex items-center gap-2">
           <div className="bg-primary rounded-lg p-2">
             <Compass className="h-6 w-6 text-primary-foreground" />
@@ -84,14 +84,13 @@ export function AppSidebar() {
         </div>
       </SidebarHeader>
       
-      <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupLabel>Navigation</SidebarGroupLabel>
+      <SidebarContent className="px-2">
+        <SidebarGroup className="py-2">
           <SidebarGroupContent>
             <SidebarMenu>
               {navigationItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild className="h-12" isActive={location.pathname === item.url}>
+                  <SidebarMenuButton asChild className="h-12 mb-1" isActive={location.pathname === item.url}>
                     <Link to={item.url} className="flex flex-col items-start gap-1 p-3">
                       <div className="flex items-center gap-3">
                         <item.icon className="h-4 w-4" />
@@ -108,14 +107,16 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        <SidebarGroup>
-          <SidebarGroupLabel>Account</SidebarGroupLabel>
+        <SidebarGroup className="py-2 mt-2">
+          <SidebarGroupLabel className="text-xs uppercase tracking-wider text-muted-foreground/70 px-3 mb-2">
+            Account
+          </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {secondaryItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild isActive={location.pathname === item.url}>
-                    <Link to={item.url} className="flex items-center gap-3">
+                  <SidebarMenuButton asChild className="mb-1" isActive={location.pathname === item.url}>
+                    <Link to={item.url} className="flex items-center gap-3 p-3">
                       <item.icon className="h-4 w-4" />
                       <span>{item.title}</span>
                     </Link>
@@ -127,7 +128,7 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="p-4">
+      <SidebarFooter className="p-4 pt-2">
         <div className="flex items-center gap-3 p-2 rounded-lg bg-muted/50">
           <Avatar className="h-8 w-8">
             <AvatarImage src="" alt="User" />
