@@ -6,32 +6,32 @@
 @layer base {
   :root {
     --background: 252 97% 98%;
-    --foreground: 250 13% 15%;
+    --foreground: 220 13% 15%;
 
     --card: 0 0% 100%;
-    --card-foreground: 250 13% 15%;
+    --card-foreground: 220 13% 15%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 250 13% 15%;
+    --popover-foreground: 220 13% 15%;
 
-    --primary: 255 86% 66%;
+    --primary: 217 91% 60%;
     --primary-foreground: 210 40% 98%;
 
-    --secondary: 261 40% 50%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 32 95% 64%;
+    --secondary-foreground: 220 13% 15%;
 
     --muted: 240 5% 96%;
     --muted-foreground: 215 16% 47%;
 
-    --accent: 199 89% 48%;
-    --accent-foreground: 0 0% 100%;
+    --accent: 35 84% 62%;
+    --accent-foreground: 220 13% 15%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 210 40% 98%;
 
     --border: 214 32% 91%;
     --input: 214 32% 91%;
-    --ring: 255 86% 66%;
+    --ring: 217 91% 60%;
 
     --radius: 0.5rem;
   }
@@ -46,16 +46,16 @@
     --popover: 222 84% 5%;
     --popover-foreground: 210 40% 98%;
 
-    --primary: 255 86% 66%;
+    --primary: 217 91% 60%;
     --primary-foreground: 222 47% 11%;
 
-    --secondary: 261 40% 50%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 32 95% 64%;
+    --secondary-foreground: 222 47% 11%;
 
     --muted: 217 33% 18%;
     --muted-foreground: 215 20% 65%;
 
-    --accent: 199 89% 48%;
+    --accent: 35 84% 62%;
     --accent-foreground: 210 40% 98%;
 
     --destructive: 0 63% 31%;
@@ -63,7 +63,7 @@
 
     --border: 217 33% 18%;
     --input: 217 33% 18%;
-    --ring: 255 86% 66%;
+    --ring: 217 91% 60%;
   }
 }
 
@@ -78,7 +78,7 @@
 }
 
 .travel-gradient {
-  @apply bg-gradient-to-r from-primary to-secondary;
+  @apply bg-gradient-to-r from-primary via-secondary to-accent;
 }
 
 .calendar-event {
@@ -87,4 +87,16 @@
 
 .trip-card {
   @apply bg-white rounded-lg shadow-md overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1;
+}
+
+.ocean-gradient {
+  @apply bg-gradient-to-br from-blue-400 via-blue-500 to-blue-600;
+}
+
+.sunset-gradient {
+  @apply bg-gradient-to-r from-orange-400 via-yellow-400 to-orange-500;
+}
+
+.tropical-gradient {
+  @apply bg-gradient-to-r from-blue-400 via-yellow-300 to-orange-400;
 }

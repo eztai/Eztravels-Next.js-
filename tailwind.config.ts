@@ -53,6 +53,44 @@ export default {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
 				},
+				travel: {
+					blue: {
+						50: '#eff6ff',
+						100: '#dbeafe',
+						200: '#bfdbfe',
+						300: '#93c5fd',
+						400: '#60a5fa',
+						500: '#3b82f6',
+						600: '#2563eb',
+						700: '#1d4ed8',
+						800: '#1e40af',
+						900: '#1e3a8a',
+					},
+					yellow: {
+						50: '#fefce8',
+						100: '#fef3c7',
+						200: '#fde68a',
+						300: '#fcd34d',
+						400: '#fbbf24',
+						500: '#f59e0b',
+						600: '#d97706',
+						700: '#b45309',
+						800: '#92400e',
+						900: '#78350f',
+					},
+					orange: {
+						50: '#fff7ed',
+						100: '#ffedd5',
+						200: '#fed7aa',
+						300: '#fdba74',
+						400: '#fb923c',
+						500: '#f97316',
+						600: '#ea580c',
+						700: '#c2410c',
+						800: '#9a3412',
+						900: '#7c2d12',
+					}
+				}
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
@@ -91,13 +129,25 @@ export default {
 					'50%': {
 						transform: 'translateY(-10px)'
 					}
+				},
+				'wave': {
+					'0%, 100%': {
+						transform: 'rotate(0deg)'
+					},
+					'25%': {
+						transform: 'rotate(5deg)'
+					},
+					'75%': {
+						transform: 'rotate(-5deg)'
+					}
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
 				'accordion-up': 'accordion-up 0.2s ease-out',
 				'pulse-slow': 'pulse-slow 3s ease-in-out infinite',
-				'float': 'float 6s ease-in-out infinite'
+				'float': 'float 6s ease-in-out infinite',
+				'wave': 'wave 2s ease-in-out infinite'
 			}
 		}
 	},
