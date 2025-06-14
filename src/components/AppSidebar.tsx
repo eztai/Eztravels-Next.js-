@@ -70,8 +70,8 @@ export function AppSidebar() {
 
   return (
     <Sidebar className="border-r">
-      <SidebarHeader className="p-4 pb-2">
-        <div className="flex items-center gap-2">
+      <SidebarHeader className="px-4 py-6">
+        <div className="flex items-center gap-3">
           <div className="bg-primary rounded-lg p-2">
             <Compass className="h-6 w-6 text-primary-foreground" />
           </div>
@@ -84,21 +84,23 @@ export function AppSidebar() {
         </div>
       </SidebarHeader>
       
-      <SidebarContent className="px-2">
-        <SidebarGroup className="py-2">
+      <SidebarContent className="px-3">
+        <SidebarGroup>
           <SidebarGroupContent>
-            <SidebarMenu>
+            <SidebarMenu className="space-y-1">
               {navigationItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild className="h-12 mb-1" isActive={location.pathname === item.url}>
-                    <Link to={item.url} className="flex flex-col items-start gap-1 p-3">
-                      <div className="flex items-center gap-3">
-                        <item.icon className="h-4 w-4" />
-                        <span className="font-medium">{item.title}</span>
+                  <SidebarMenuButton asChild className="h-auto py-3" isActive={location.pathname === item.url}>
+                    <Link to={item.url}>
+                      <div className="flex items-center gap-3 w-full">
+                        <item.icon className="h-5 w-5 shrink-0" />
+                        <div className="flex flex-col items-start flex-1 min-w-0">
+                          <span className="font-medium text-sm">{item.title}</span>
+                          <span className="text-xs text-muted-foreground leading-tight">
+                            {item.description}
+                          </span>
+                        </div>
                       </div>
-                      <span className="text-xs text-muted-foreground ml-7">
-                        {item.description}
-                      </span>
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -107,18 +109,18 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        <SidebarGroup className="py-2 mt-2">
-          <SidebarGroupLabel className="text-xs uppercase tracking-wider text-muted-foreground/70 px-3 mb-2">
+        <SidebarGroup className="mt-6">
+          <SidebarGroupLabel className="text-xs font-semibold text-muted-foreground/70 uppercase tracking-wider px-2 mb-2">
             Account
           </SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu>
+            <SidebarMenu className="space-y-1">
               {secondaryItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild className="mb-1" isActive={location.pathname === item.url}>
-                    <Link to={item.url} className="flex items-center gap-3 p-3">
+                  <SidebarMenuButton asChild className="h-10" isActive={location.pathname === item.url}>
+                    <Link to={item.url}>
                       <item.icon className="h-4 w-4" />
-                      <span>{item.title}</span>
+                      <span className="text-sm">{item.title}</span>
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -128,11 +130,11 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="p-4 pt-2">
-        <div className="flex items-center gap-3 p-2 rounded-lg bg-muted/50">
-          <Avatar className="h-8 w-8">
+      <SidebarFooter className="p-4">
+        <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/30">
+          <Avatar className="h-9 w-9">
             <AvatarImage src="" alt="User" />
-            <AvatarFallback className="bg-primary text-primary-foreground text-sm">
+            <AvatarFallback className="bg-primary text-primary-foreground text-sm font-medium">
               JD
             </AvatarFallback>
           </Avatar>
