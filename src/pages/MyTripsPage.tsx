@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -6,70 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { CalendarDays, MapPin, Users, DollarSign, Plus, Calendar } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
-
-// Mock trip data
-const mockTrips = {
-  current: [
-    {
-      id: 1,
-      title: "Tokyo Adventure",
-      destination: "Tokyo, Japan",
-      startDate: "2024-06-15",
-      endDate: "2024-06-22",
-      status: "active",
-      budget: 3500,
-      spent: 1200,
-      travelers: 2,
-      image: "https://source.unsplash.com/400x200/?tokyo"
-    }
-  ],
-  upcoming: [
-    {
-      id: 2,
-      title: "European Summer",
-      destination: "Paris, France",
-      startDate: "2024-08-10",
-      endDate: "2024-08-20",
-      status: "planned",
-      budget: 4000,
-      spent: 0,
-      travelers: 3,
-      image: "https://source.unsplash.com/400x200/?paris"
-    },
-    {
-      id: 3,
-      title: "Iceland Road Trip",
-      destination: "Reykjavik, Iceland",
-      startDate: "2024-09-05",
-      endDate: "2024-09-12",
-      status: "planned",
-      budget: 2800,
-      spent: 0,
-      travelers: 2,
-      image: "https://source.unsplash.com/400x200/?iceland"
-    }
-  ],
-  past: [
-    {
-      id: 4,
-      title: "Bali Retreat",
-      destination: "Ubud, Bali",
-      startDate: "2024-03-01",
-      endDate: "2024-03-10",
-      status: "completed",
-      budget: 2000,
-      spent: 1850,
-      travelers: 2,
-      image: "https://source.unsplash.com/400x200/?bali"
-    }
-  ]
-};
-
-const savedLocations = [
-  { id: 1, name: "Santorini, Greece", category: "Beach", savedDate: "2024-05-01" },
-  { id: 2, name: "Machu Picchu, Peru", category: "Adventure", savedDate: "2024-04-15" },
-  { id: 3, name: "Swiss Alps", category: "Nature", savedDate: "2024-03-20" }
-];
+import { mockTrips, savedLocations } from '@/utils/mockData';
 
 const MyTripsPage: React.FC = () => {
   const navigate = useNavigate();
@@ -124,7 +62,11 @@ const MyTripsPage: React.FC = () => {
         </div>
 
         <div className="flex gap-2 pt-2">
-          <Button size="sm" className="flex-1" onClick={() => navigate('/itinerary')}>
+          <Button 
+            size="sm" 
+            className="flex-1" 
+            onClick={() => navigate(`/itinerary?tripId=${trip.id}`)}
+          >
             View Details
           </Button>
           <Button size="sm" variant="outline">
@@ -139,7 +81,7 @@ const MyTripsPage: React.FC = () => {
   // Get all trips for calendar view
   const allTrips = [...mockTrips.current, ...mockTrips.upcoming, ...mockTrips.past];
   
-  // Create events for calendar
+  // Create events for calendar from trip data
   const getTripEvents = (date: Date) => {
     return allTrips.filter(trip => {
       const startDate = new Date(trip.startDate);
@@ -251,7 +193,11 @@ const MyTripsPage: React.FC = () => {
                         <p className="text-xs text-muted-foreground mt-1">
                           {formatDate(trip.startDate)} - {formatDate(trip.endDate)}
                         </p>
-                        <Button size="sm" className="mt-2" onClick={() => navigate('/itinerary')}>
+                        <Button 
+                          size="sm" 
+                          className="mt-2" 
+                          onClick={() => navigate(`/itinerary?tripId=${trip.id}`)}
+                        >
                           View Itinerary
                         </Button>
                       </div>

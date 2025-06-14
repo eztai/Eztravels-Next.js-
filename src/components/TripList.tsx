@@ -4,40 +4,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from '@/components/ui/button';
 import { PlusCircle, MapPin, Calendar, Users, Plane } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-
-// Sample trip data
-const trips = [
-  {
-    id: 1,
-    title: 'Bali Adventure',
-    destination: 'Bali, Indonesia',
-    startDate: 'May 10, 2025',
-    endDate: 'May 17, 2025',
-    participants: 2,
-    status: 'upcoming',
-    image: 'https://source.unsplash.com/random/300x200/?bali'
-  },
-  {
-    id: 2,
-    title: 'Tokyo Exploration',
-    destination: 'Tokyo, Japan',
-    startDate: 'July 15, 2025',
-    endDate: 'July 25, 2025',
-    participants: 1,
-    status: 'planned',
-    image: 'https://source.unsplash.com/random/300x200/?tokyo'
-  },
-  {
-    id: 3,
-    title: 'Paris Getaway',
-    destination: 'Paris, France',
-    startDate: 'October 3, 2025',
-    endDate: 'October 10, 2025',
-    participants: 2,
-    status: 'draft',
-    image: 'https://source.unsplash.com/random/300x200/?paris'
-  }
-];
+import { trips } from '@/utils/mockData';
 
 const TripList: React.FC = () => {
   return (

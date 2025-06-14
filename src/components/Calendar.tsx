@@ -1,34 +1,22 @@
-
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native-web';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Calendar as CalendarIcon, Clock, MapPin } from 'lucide-react';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { useIsMobile } from '@/hooks/use-mobile';
-
-// Sample calendar events
-const events = [
-  { id: 1, title: 'Flight to Bali', date: new Date(2025, 4, 10), time: '10:30 AM', location: 'JFK Airport', type: 'travel' },
-  { id: 2, title: 'Hotel Check-in', date: new Date(2025, 4, 10), time: '3:00 PM', location: 'Beachfront Resort', type: 'accommodation' },
-  { id: 3, title: 'Sunrise Trek', date: new Date(2025, 4, 11), time: '5:00 AM', location: 'Mount Batur', type: 'activity' },
-  { id: 4, title: 'Spa Appointment', date: new Date(2025, 4, 12), time: '2:00 PM', location: 'Resort Spa', type: 'activity' },
-  { id: 5, title: 'Dinner Reservation', date: new Date(2025, 4, 13), time: '7:30 PM', location: 'Seafood Restaurant', type: 'food' },
-  { id: 6, title: 'Snorkeling Trip', date: new Date(2025, 4, 14), time: '9:00 AM', location: 'Coral Bay', type: 'activity' },
-  { id: 7, title: 'Hotel Check-out', date: new Date(2025, 4, 17), time: '11:00 AM', location: 'Beachfront Resort', type: 'accommodation' },
-  { id: 8, title: 'Flight to Home', date: new Date(2025, 4, 17), time: '4:45 PM', location: 'Denpasar Airport', type: 'travel' },
-];
+import { calendarEvents } from '@/utils/mockData';
 
 const Calendar: React.FC = () => {
   const [date, setDate] = React.useState<Date | undefined>(new Date());
   const isMobile = useIsMobile();
   
   // Filter events for the selected date
-  const selectedDateEvents = events.filter(
+  const selectedDateEvents = calendarEvents.filter(
     event => date && event.date.toDateString() === date.toDateString()
   );
 
   // Get event dates for highlighting in calendar
-  const eventDates = events.map(event => event.date);
+  const eventDates = calendarEvents.map(event => event.date);
   
   // Function to get CSS class for event type
   const getEventClass = (type: string) => {
