@@ -87,13 +87,13 @@ interface ExploreSectionProps {
 const ExploreSection: React.FC<ExploreSectionProps> = ({ onAddToTrip }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedFilter, setSelectedFilter] = useState<string>('');
-  const [locationFilter, setLocationFilter] = useState<string>('');
+  const [locationFilter, setLocationFilter] = useState<string>('all');
 
   const filteredDestinations = destinations.filter(dest => {
     const matchesSearch = dest.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          dest.country.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesFilter = !selectedFilter || dest.tags.includes(selectedFilter);
-    const matchesLocation = !locationFilter || dest.country === locationFilter;
+    const matchesLocation = locationFilter === 'all' || dest.country === locationFilter;
     
     return matchesSearch && matchesFilter && matchesLocation;
   });
@@ -119,7 +119,7 @@ const ExploreSection: React.FC<ExploreSectionProps> = ({ onAddToTrip }) => {
               <SelectValue placeholder="Location" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All Locations</SelectItem>
+              <SelectItem value="all">All Locations</SelectItem>
               <SelectItem value="nearby">Near Me</SelectItem>
               {countries.map(country => (
                 <SelectItem key={country} value={country}>{country}</SelectItem>
