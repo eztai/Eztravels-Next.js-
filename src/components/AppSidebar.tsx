@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import { 
   Home, 
   MapPin, 
@@ -65,6 +66,8 @@ const secondaryItems = [
 ];
 
 export function AppSidebar() {
+  const location = useLocation();
+
   return (
     <Sidebar className="border-r">
       <SidebarHeader className="p-4">
@@ -88,8 +91,8 @@ export function AppSidebar() {
             <SidebarMenu>
               {navigationItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild className="h-12">
-                    <a href={item.url} className="flex flex-col items-start gap-1 p-3">
+                  <SidebarMenuButton asChild className="h-12" isActive={location.pathname === item.url}>
+                    <Link to={item.url} className="flex flex-col items-start gap-1 p-3">
                       <div className="flex items-center gap-3">
                         <item.icon className="h-4 w-4" />
                         <span className="font-medium">{item.title}</span>
@@ -97,7 +100,7 @@ export function AppSidebar() {
                       <span className="text-xs text-muted-foreground ml-7">
                         {item.description}
                       </span>
-                    </a>
+                    </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
@@ -111,11 +114,11 @@ export function AppSidebar() {
             <SidebarMenu>
               {secondaryItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <a href={item.url} className="flex items-center gap-3">
+                  <SidebarMenuButton asChild isActive={location.pathname === item.url}>
+                    <Link to={item.url} className="flex items-center gap-3">
                       <item.icon className="h-4 w-4" />
                       <span>{item.title}</span>
-                    </a>
+                    </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
