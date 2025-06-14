@@ -1,156 +1,105 @@
 
 import React, { useState } from 'react';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Send, Mic, Bot } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Send, Bot, User } from 'lucide-react';
 
 interface Message {
-  id: number;
-  content: string;
-  isUser: boolean;
+  id: string;
+  text: string;
+  sender: 'user' | 'assistant';
   timestamp: Date;
 }
 
-const initialMessages: Message[] = [
-  {
-    id: 1,
-    content: "Hello! I'm your JourneyBuddy assistant. How can I help with your trip planning today?",
-    isUser: false,
-    timestamp: new Date()
-  }
-];
-
 const ChatAssistant: React.FC = () => {
-  const [messages, setMessages] = useState<Message[]>(initialMessages);
-  const [newMessage, setNewMessage] = useState('');
-  const [isTyping, setIsTyping] = useState(false);
-  
+  const [messages, setMessages] = useState<Message[]>([
+    {
+      id: '1',
+      text: "Hi! I'm your AI travel assistant. I can help you discover amazing destinations, plan your itinerary, and make travel recommendations. What kind of trip are you planning?",
+      sender: 'assistant',
+      timestamp: new Date()
+    }
+  ]);
+  const [inputMessage, setInputMessage] = useState('');
+
   const handleSendMessage = () => {
-    if (!newMessage.trim()) return;
-    
-    // Add user message
+    if (!inputMessage.trim()) return;
+
     const userMessage: Message = {
-      id: messages.length + 1,
-      content: newMessage,
-      isUser: true,
+      id: Date.now().toString(),
+      text: inputMessage,
+      sender: 'user',
       timestamp: new Date()
     };
-    
-    setMessages([...messages, userMessage]);
-    setNewMessage('');
-    setIsTyping(true);
-    
-    // Simulate assistant response
+
+    setMessages(prev => [...prev, userMessage]);
+    setInputMessage('');
+
+    // Simulate AI response
     setTimeout(() => {
-      const responses = [
-        "I can help you find activities in Bali. Would you like to explore beaches, cultural sites, or adventure activities?",
-        "Based on your budget, I recommend taking public transportation in Tokyo. It's efficient and much more affordable than taxis.",
-        "The best time to visit Paris is during spring or fall when there are fewer tourists and the weather is pleasant.",
-        "I've found a few highly-rated restaurants near your hotel. Would you like me to show you options with vegetarian dishes?",
-        "You might want to pack light clothing for Bali, but also bring a light jacket for evenings and air-conditioned places."
-      ];
-      
-      const assistantMessage: Message = {
-        id: messages.length + 2,
-        content: responses[Math.floor(Math.random() * responses.length)],
-        isUser: false,
+      const aiResponse: Message = {
+        id: (Date.now() + 1).toString(),
+        text: "I'd be happy to help you with that! Let me suggest some destinations based on your interests. You can also explore the destinations in the Explore section and I'll help you add them to your itinerary.",
+        sender: 'assistant',
         timestamp: new Date()
       };
-      
-      setMessages(prev => [...prev, assistantMessage]);
-      setIsTyping(false);
-    }, 1500);
+      setMessages(prev => [...prev, aiResponse]);
+    }, 1000);
   };
-  
+
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
       handleSendMessage();
     }
   };
-  
+
   return (
-    <div id="assistant" className="py-8">
-      <h2 className="text-2xl font-bold mb-6">Travel Assistant</h2>
+    <div className="flex flex-col h-96">
+      <div className="flex-1 overflow-y-auto space-y-4 p-4">
+        {messages.map((message) => (
+          <div
+            key={message.id}
+            className={`flex items-start gap-3 ${
+              message.sender === 'user' ? 'flex-row-reverse' : ''
+            }`}
+          >
+            <div className={`p-2 rounded-full ${
+              message.sender === 'user' 
+                ? 'bg-primary text-primary-foreground' 
+                : 'bg-muted'
+            }`}>
+              {message.sender === 'user' ? (
+                <User className="h-4 w-4" />
+              ) : (
+                <Bot className="h-4 w-4" />
+              )}
+            </div>
+            <Card className={`max-w-[80%] ${
+              message.sender === 'user' ? 'bg-primary text-primary-foreground' : ''
+            }`}>
+              <CardContent className="p-3">
+                <p className="text-sm">{message.text}</p>
+              </CardContent>
+            </Card>
+          </div>
+        ))}
+      </div>
       
-      <Card className="w-full max-w-4xl mx-auto">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Bot className="h-5 w-5 text-primary" />
-            JourneyBuddy Assistant
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="h-[400px] overflow-y-auto space-y-4 mb-4 p-1">
-            {messages.map(message => (
-              <div 
-                key={message.id} 
-                className={`flex ${message.isUser ? 'justify-end' : 'justify-start'}`}
-              >
-                <div className={`flex gap-3 max-w-[80%] ${message.isUser ? 'flex-row-reverse' : ''}`}>
-                  <Avatar className="h-8 w-8 mt-1">
-                    {message.isUser ? (
-                      <>
-                        <AvatarImage src="" />
-                        <AvatarFallback className="bg-primary text-primary-foreground">JD</AvatarFallback>
-                      </>
-                    ) : (
-                      <>
-                        <AvatarImage src="" />
-                        <AvatarFallback className="bg-accent text-white">AI</AvatarFallback>
-                      </>
-                    )}
-                  </Avatar>
-                  <div 
-                    className={`p-3 rounded-lg ${
-                      message.isUser 
-                        ? 'bg-primary text-primary-foreground' 
-                        : 'bg-muted'
-                    }`}
-                  >
-                    <p>{message.content}</p>
-                    <p className={`text-xs mt-1 ${message.isUser ? 'text-primary-foreground/70' : 'text-muted-foreground'}`}>
-                      {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            ))}
-            {isTyping && (
-              <div className="flex justify-start">
-                <div className="flex gap-3 max-w-[80%]">
-                  <Avatar className="h-8 w-8 mt-1">
-                    <AvatarFallback className="bg-accent text-white">AI</AvatarFallback>
-                  </Avatar>
-                  <div className="p-3 rounded-lg bg-muted flex items-center gap-1">
-                    <div className="w-2 h-2 rounded-full bg-muted-foreground animate-pulse"></div>
-                    <div className="w-2 h-2 rounded-full bg-muted-foreground animate-pulse" style={{ animationDelay: '0.2s' }}></div>
-                    <div className="w-2 h-2 rounded-full bg-muted-foreground animate-pulse" style={{ animationDelay: '0.4s' }}></div>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-        </CardContent>
-        <CardFooter>
-          <div className="flex w-full gap-2">
-            <Button variant="outline" size="icon">
-              <Mic className="h-5 w-5" />
-            </Button>
-            <Input
-              placeholder="Ask something about your trip..."
-              value={newMessage}
-              onChange={(e) => setNewMessage(e.target.value)}
-              onKeyDown={handleKeyPress}
-              className="flex-1"
-            />
-            <Button onClick={handleSendMessage}>
-              <Send className="h-5 w-5" />
-            </Button>
-          </div>
-        </CardFooter>
-      </Card>
+      <div className="border-t p-4">
+        <div className="flex gap-2">
+          <Input
+            placeholder="Ask me about destinations, planning tips, or anything travel-related..."
+            value={inputMessage}
+            onChange={(e) => setInputMessage(e.target.value)}
+            onKeyPress={handleKeyPress}
+            className="flex-1"
+          />
+          <Button onClick={handleSendMessage} size="icon">
+            <Send className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
     </div>
   );
 };

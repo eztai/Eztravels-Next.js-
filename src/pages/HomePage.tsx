@@ -1,11 +1,9 @@
 
 import React, { useState } from 'react';
-import { View, Text, StyleSheet } from 'react-native-web';
 import ChatAssistant from '@/components/ChatAssistant';
 import ExploreSection from '@/components/ExploreSection';
 import AIItineraryBuilder from '@/components/AIItineraryBuilder';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { MapPin, MessageSquare, Route } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
@@ -32,13 +30,13 @@ const HomePage: React.FC = () => {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Welcome to EzTravels</Text>
-        <Text style={styles.subtitle}>Your AI-powered travel companion</Text>
-      </View>
+    <div className="flex-1 p-6">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold mb-2">Welcome to EzTravels</h1>
+        <p className="text-muted-foreground">Your AI-powered travel companion</p>
+      </div>
 
-      <View style={styles.content}>
+      <div className="flex-1">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-3 mb-6">
             <TabsTrigger value="explore" className="flex items-center gap-2">
@@ -77,31 +75,9 @@ const HomePage: React.FC = () => {
             />
           </TabsContent>
         </Tabs>
-      </View>
-    </View>
+      </div>
+    </div>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 24,
-  },
-  header: {
-    marginBottom: 32,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: 'var(--muted-foreground)',
-  },
-  content: {
-    flex: 1,
-  },
-});
 
 export default HomePage;
