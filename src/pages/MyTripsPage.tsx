@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -14,11 +15,13 @@ import { TripViewControls } from '@/components/TripViewControls';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Filter, Grid, List, Pin as PinIcon, PinOff as PinOffIcon, Search, Bot } from 'lucide-react';
 
-// Enhanced mock data with progress indicators
+// Enhanced mock data with progress indicators - updated to 2025 dates
 const enhancedTrips = {
   current: [
     {
       ...mockTrips.current[0],
+      startDate: "2025-06-15",
+      endDate: "2025-06-22",
       travelers: [
         { id: '1', name: 'John Doe', confirmed: true },
         { id: '2', name: 'Jane Smith', confirmed: true }
@@ -35,6 +38,8 @@ const enhancedTrips = {
   upcoming: [
     {
       ...mockTrips.upcoming[0],
+      startDate: "2025-08-10",
+      endDate: "2025-08-20",
       travelers: [
         { id: '1', name: 'John Doe', confirmed: true },
         { id: '2', name: 'Sarah Wilson', confirmed: false },
@@ -49,6 +54,8 @@ const enhancedTrips = {
     } as EnhancedTrip,
     {
       ...mockTrips.upcoming[1],
+      startDate: "2025-09-05",
+      endDate: "2025-09-12",
       travelers: [
         { id: '1', name: 'John Doe', confirmed: true },
         { id: '2', name: 'Alex Brown', confirmed: false }
@@ -64,6 +71,8 @@ const enhancedTrips = {
   past: [
     {
       ...mockTrips.past[0],
+      startDate: "2025-03-01",
+      endDate: "2025-03-10",
       travelers: [
         { id: '1', name: 'John Doe', confirmed: true },
         { id: '2', name: 'Jane Smith', confirmed: true }
