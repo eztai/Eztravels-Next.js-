@@ -16,7 +16,9 @@ import {
   Send,
   Download,
   CheckCircle,
-  ChevronDown
+  ChevronDown,
+  Share2,
+  Clock
 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
@@ -37,6 +39,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
 import { trips } from '@/utils/mockData';
 
 // Mock data for the current trip
@@ -72,7 +81,8 @@ const expenses = [
     paidBy: 'John Doe', 
     sharedWith: ['Jane Smith', 'Mike Johnson'], 
     date: '2024-06-15',
-    currency: 'USD'
+    currency: 'USD',
+    isShared: true
   },
   { 
     id: 2, 
@@ -82,7 +92,8 @@ const expenses = [
     paidBy: 'Jane Smith', 
     sharedWith: ['John Doe', 'Mike Johnson'], 
     date: '2024-06-16',
-    currency: 'USD'
+    currency: 'USD',
+    isShared: true
   },
   { 
     id: 3, 
@@ -92,7 +103,8 @@ const expenses = [
     paidBy: 'Mike Johnson', 
     sharedWith: ['John Doe', 'Jane Smith'], 
     date: '2024-06-16',
-    currency: 'USD'
+    currency: 'USD',
+    isShared: true
   },
   { 
     id: 4, 
@@ -102,14 +114,26 @@ const expenses = [
     paidBy: 'John Doe', 
     sharedWith: ['Jane Smith'], 
     date: '2024-06-17',
-    currency: 'USD'
+    currency: 'USD',
+    isShared: true
+  },
+  { 
+    id: 5, 
+    description: 'Personal Souvenir', 
+    amount: 45, 
+    category: 'Shopping', 
+    paidBy: 'You', 
+    sharedWith: [], 
+    date: '2024-06-17',
+    currency: 'USD',
+    isShared: false
   }
 ];
 
 const spendingTimeline = [
   { date: '06/15', amount: 1200 },
   { date: '06/16', amount: 300 },
-  { date: '06/17', amount: 90 },
+  { date: '06/17', amount: 135 },
   { date: '06/18', amount: 0 },
   { date: '06/19', amount: 0 },
   { date: '06/20', amount: 0 },
@@ -121,6 +145,8 @@ const BudgetPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState('summary');
   const [selectedCurrency, setSelectedCurrency] = useState('USD');
   const [selectedTripId, setSelectedTripId] = useState<number | 'all'>(1);
+  const [splitDialogOpen, setSplitDialogOpen] = useState(false);
+  const [selectedExpense, setSelectedExpense] = useState<any>(null);
 
   // Get the selected trip data or aggregate data
   const selectedTrip = selectedTripId === 'all' ? null : trips.find(trip => trip.id === selectedTripId) || trips[0];
@@ -128,7 +154,7 @@ const BudgetPage: React.FC = () => {
   // Calculate aggregated data for "All Trips"
   const aggregatedData = {
     totalTrips: trips.length,
-    totalBudget: trips.reduce((sum, trip) => sum + (trip.budget || 4500), 0), // fallback budget
+    totalBudget: trips.reduce((sum, trip) => sum + (trip.budget || 4500), 0), // fallback budget with default value
     totalParticipants: trips.reduce((sum, trip) => sum + trip.participants, 0),
     destinations: [...new Set(trips.map(trip => trip.destination))].join(', ')
   };
@@ -150,6 +176,11 @@ const BudgetPage: React.FC = () => {
     transport: { label: "Transportation", color: "#f59e0b" },
     activities: { label: "Activities", color: "#8b5cf6" },
     shopping: { label: "Shopping", color: "#ef4444" }
+  };
+
+  const handleSplitExpense = (expense: any) => {
+    setSelectedExpense(expense);
+    setSplitDialogOpen(true);
   };
 
   return (
@@ -198,101 +229,55 @@ const BudgetPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Trip Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div>
-          {selectedTripId === 'all' ? (
-            <>
-              <h1 className="text-3xl font-bold">All Trips Budget</h1>
-              <div className="flex items-center gap-4 text-muted-foreground mt-2">
-                <div className="flex items-center gap-1">
-                  <MapPin className="h-4 w-4" />
-                  <span>{aggregatedData.destinations}</span>
+      {/* Trip Header - Sticky Overview */}
+      <div className="sticky top-0 z-10 bg-background border rounded-lg p-4 shadow-sm">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <div>
+            {selectedTripId === 'all' ? (
+              <>
+                <h1 className="text-2xl font-bold">All Trips Budget</h1>
+                <div className="flex items-center gap-4 text-muted-foreground mt-1">
+                  <div className="flex items-center gap-1">
+                    <MapPin className="h-4 w-4" />
+                    <span>{aggregatedData.destinations}</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Users className="h-4 w-4" />
+                    <span>{aggregatedData.totalTrips} trips</span>
+                  </div>
                 </div>
-                <div className="flex items-center gap-1">
-                  <Users className="h-4 w-4" />
-                  <span>{aggregatedData.totalTrips} trips</span>
+              </>
+            ) : (
+              <>
+                <h1 className="text-2xl font-bold">{selectedTrip?.title}</h1>
+                <div className="flex items-center gap-4 text-muted-foreground mt-1">
+                  <div className="flex items-center gap-1">
+                    <MapPin className="h-4 w-4" />
+                    <span>{selectedTrip?.destination}</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Calendar className="h-4 w-4" />
+                    <span>{selectedTrip?.startDate} - {selectedTrip?.endDate}</span>
+                  </div>
                 </div>
-                <div className="flex items-center gap-1">
-                  <Users className="h-4 w-4" />
-                  <span>{aggregatedData.totalParticipants} total participants</span>
-                </div>
-                <Badge variant="outline">Overview</Badge>
-              </div>
-            </>
-          ) : (
-            <>
-              <h1 className="text-3xl font-bold">{selectedTrip?.title}</h1>
-              <div className="flex items-center gap-4 text-muted-foreground mt-2">
-                <div className="flex items-center gap-1">
-                  <MapPin className="h-4 w-4" />
-                  <span>{selectedTrip?.destination}</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <Calendar className="h-4 w-4" />
-                  <span>{selectedTrip?.startDate} - {selectedTrip?.endDate}</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <Users className="h-4 w-4" />
-                  <span>{selectedTrip?.participants} people</span>
-                </div>
-                <Badge variant={
-                  selectedTrip?.status === 'upcoming' ? 'default' : 
-                  selectedTrip?.status === 'planned' ? 'outline' : 'secondary'
-                }>
-                  {selectedTrip?.status === 'upcoming' ? 'Upcoming' : 
-                   selectedTrip?.status === 'planned' ? 'Planned' : 'Draft'}
-                </Badge>
-              </div>
-            </>
-          )}
+              </>
+            )}
+          </div>
+          <div className="flex items-center gap-4">
+            <div className="text-right">
+              <p className="text-sm text-muted-foreground">Total Budget</p>
+              <p className="text-lg font-semibold">${currentBudget}</p>
+            </div>
+            <div className="text-right">
+              <p className="text-sm text-muted-foreground">Spent</p>
+              <p className="text-lg font-semibold text-red-600">${totalSpent}</p>
+            </div>
+            <div className="w-24">
+              <Progress value={spentPercentage} className="h-2" />
+              <p className="text-xs text-muted-foreground mt-1">{spentPercentage.toFixed(0)}% used</p>
+            </div>
+          </div>
         </div>
-      </div>
-
-      {/* Budget Overview Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Budget</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">${currentBudget}</div>
-            <p className="text-xs text-muted-foreground">
-              {selectedTripId === 'all' ? `${aggregatedData.totalTrips} trips combined` : '8-day trip budget'}
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Spent</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">${totalSpent}</div>
-            <Progress value={spentPercentage} className="mt-2" />
-            <p className="text-xs text-muted-foreground mt-1">
-              {spentPercentage.toFixed(1)}% of budget used
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Remaining</CardTitle>
-            <PieChart className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-600">${remainingBudget}</div>
-            <p className="text-xs text-muted-foreground">
-              {selectedTripId === 'all' 
-                ? 'Across all trips' 
-                : `$${(remainingBudget / 5).toFixed(0)} per day remaining`
-              }
-            </p>
-          </CardContent>
-        </Card>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
@@ -302,6 +287,68 @@ const BudgetPage: React.FC = () => {
         </TabsList>
 
         <TabsContent value="summary" className="space-y-6">
+          {/* Recent Expenses - Top Priority */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Clock className="h-5 w-5" />
+                Recent Expenses
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {expenses.map((expense) => (
+                  <div key={expense.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
+                    <div className="flex items-center gap-3 flex-1">
+                      <div className="p-2 bg-muted rounded-full">
+                        <Receipt className="h-4 w-4" />
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <p className="font-medium">{expense.description}</p>
+                          {expense.isShared && (
+                            <Badge variant="outline" className="text-xs">
+                              Split with {expense.sharedWith.length}
+                            </Badge>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                          <span>{expense.date}</span>
+                          <span>•</span>
+                          <span>Paid by {expense.paidBy}</span>
+                          <span>•</span>
+                          <Badge variant="outline" className="text-xs">{expense.category}</Badge>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <div className="text-right">
+                        <p className="font-semibold">${expense.amount}</p>
+                      </div>
+                      {!expense.isShared ? (
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          onClick={() => handleSplitExpense(expense)}
+                          className="gap-1"
+                        >
+                          <Share2 className="h-3 w-3" />
+                          Split
+                        </Button>
+                      ) : (
+                        <Button size="sm" variant="ghost" className="gap-1">
+                          <CheckCircle className="h-3 w-3 text-green-600" />
+                          Split
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Visual Summaries - Below Recent Expenses */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Category Breakdown */}
             <Card>
@@ -380,36 +427,6 @@ const BudgetPage: React.FC = () => {
                   </LineChart>
                 </ResponsiveContainer>
               </ChartContainer>
-            </CardContent>
-          </Card>
-
-          {/* Recent Expenses */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Recent Expenses</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {expenses.slice(0, 5).map((expense) => (
-                  <div key={expense.id} className="flex items-center justify-between p-3 border rounded-lg">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 bg-muted rounded-full">
-                        <Receipt className="h-4 w-4" />
-                      </div>
-                      <div>
-                        <p className="font-medium">{expense.description}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {expense.date} • Paid by {expense.paidBy}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-semibold">${expense.amount}</p>
-                      <Badge variant="outline">{expense.category}</Badge>
-                    </div>
-                  </div>
-                ))}
-              </div>
             </CardContent>
           </Card>
         </TabsContent>
@@ -569,6 +586,62 @@ const BudgetPage: React.FC = () => {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Split Expense Dialog */}
+      <Dialog open={splitDialogOpen} onOpenChange={setSplitDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Split Expense</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            {selectedExpense && (
+              <div className="p-3 bg-muted rounded-lg">
+                <p className="font-medium">{selectedExpense.description}</p>
+                <p className="text-sm text-muted-foreground">${selectedExpense.amount} • {selectedExpense.date}</p>
+              </div>
+            )}
+            <div>
+              <label className="text-sm font-medium">Split with friends</label>
+              <div className="space-y-2 mt-2">
+                {currentTrip.participants.map((participant) => (
+                  <div key={participant.id} className="flex items-center gap-2">
+                    <input type="checkbox" id={`friend-${participant.id}`} className="rounded" />
+                    <label htmlFor={`friend-${participant.id}`} className="flex items-center gap-2 flex-1">
+                      <Avatar className="w-6 h-6">
+                        <AvatarFallback className="text-xs">
+                          {participant.name.split(' ').map(n => n[0]).join('')}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="text-sm">{participant.name}</span>
+                    </label>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div>
+              <label className="text-sm font-medium">Split method</label>
+              <Select defaultValue="equal">
+                <SelectTrigger className="mt-2">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="equal">Split equally</SelectItem>
+                  <SelectItem value="custom">Custom amounts</SelectItem>
+                  <SelectItem value="percentage">By percentage</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex gap-2 pt-4">
+              <Button variant="outline" onClick={() => setSplitDialogOpen(false)} className="flex-1">
+                Cancel
+              </Button>
+              <Button onClick={() => setSplitDialogOpen(false)} className="flex-1">
+                Split Expense
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
