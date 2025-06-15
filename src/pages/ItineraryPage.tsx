@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,12 +10,14 @@ import { AIAssistantPanel } from '@/components/AIAssistantPanel';
 import { DraggableActivityItem } from '@/components/DraggableActivityItem';
 import { SmartAddActivityDialog } from '@/components/SmartAddActivityDialog';
 import { MapViewComponent } from '@/components/MapViewComponent';
+import { TripSelector } from '@/components/TripSelector';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable';
 
 const ItineraryPage: React.FC = () => {
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const tripId = searchParams.get('tripId');
+  const [selectedTripId, setSelectedTripId] = useState(tripId || '');
   const [activeTab, setActiveTab] = useState('timeline');
   const [showAIPanel, setShowAIPanel] = useState(false);
   const [showAddDialog, setShowAddDialog] = useState(false);
@@ -30,6 +31,13 @@ const ItineraryPage: React.FC = () => {
       coordinateGetter: sortableKeyboardCoordinates,
     })
   );
+
+  const handleTripChange = (newTripId: string) => {
+    setSelectedTripId(newTripId);
+    setSearchParams({ tripId: newTripId });
+    // In a real app, you would fetch the itinerary data for the selected trip
+    console.log('Loading itinerary for trip:', newTripId);
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -95,17 +103,13 @@ const ItineraryPage: React.FC = () => {
       <div className="sticky top-0 z-40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
         <div className="flex justify-between items-center py-4">
           <div className="flex items-center gap-4">
-            <div>
-              <h1 className="text-3xl font-bold">{itineraryData.tripTitle}</h1>
-              <div className="flex items-center gap-4 text-muted-foreground">
-                <span>Day {itineraryData.currentDay} of {itineraryData.totalDays}</span>
-                {tripId && <span className="text-xs">Trip ID: {tripId}</span>}
-                <Badge variant="outline" className="bg-blue-50">
-                  <Users className="h-3 w-3 mr-1" />
-                  3 travelers
-                </Badge>
-              </div>
-            </div>
+            {/* Trip Selector */}
+            <TripSelector
+              selectedTripId={selectedTripId}
+              onTripChange={handleTripChange}
+              placeholder="Select a trip to view itinerary"
+            />
+            
             <div className="h-12 w-1 bg-primary rounded-full relative">
               <div 
                 className="absolute w-3 h-3 bg-primary rounded-full -left-1 transition-all duration-500"
@@ -146,116 +150,145 @@ const ItineraryPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Day Selector */}
-        <div className="flex items-center gap-2 pb-4">
-          <span className="text-sm font-medium">View Days:</span>
-          {itineraryData.days.map((day) => (
-            <Button
-              key={day.day}
-              variant={selectedDays.includes(day.day) ? "default" : "outline"}
-              size="sm"
-              onClick={() => toggleDay(day.day)}
-              className="h-8"
-            >
-              Day {day.day}
-            </Button>
-          ))}
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setSelectedDays(itineraryData.days.map(d => d.day))}
-            className="text-muted-foreground"
-          >
-            All Days
-          </Button>
-        </div>
-      </div>
+        {/* Trip Info & Day Selector */}
+        {selectedTripId && (
+          <>
+            <div className="pb-2">
+              <h1 className="text-3xl font-bold">{itineraryData.tripTitle}</h1>
+              <div className="flex items-center gap-4 text-muted-foreground">
+                <span>Day {itineraryData.currentDay} of {itineraryData.totalDays}</span>
+                <Badge variant="outline" className="bg-blue-50">
+                  <Users className="h-3 w-3 mr-1" />
+                  3 travelers
+                </Badge>
+              </div>
+            </div>
 
-      <div className="flex gap-6">
-        {/* Main Content */}
-        <div className={`transition-all duration-300 ${showAIPanel ? 'flex-1' : 'w-full'}`}>
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="timeline" className="flex items-center gap-2">
-                <Calendar className="h-4 w-4" />
-                Timeline
-              </TabsTrigger>
-              <TabsTrigger value="map" className="flex items-center gap-2">
-                <Map className="h-4 w-4" />
-                Map View
-              </TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="timeline" className="space-y-6 mt-6">
-              {filteredDays.map((day) => (
-                <Card key={day.day} className={`${day.day === itineraryData.currentDay ? 'ring-2 ring-primary shadow-lg' : ''} relative overflow-hidden`}>
-                  {day.day === itineraryData.currentDay && (
-                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-accent" />
-                  )}
-                  <CardHeader>
-                    <CardTitle className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <span>Day {day.day} - {day.date}</span>
-                        {day.day === itineraryData.currentDay && (
-                          <Badge variant="default" className="animate-pulse">Today</Badge>
-                        )}
-                        <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                          <Clock className="h-3 w-3" />
-                          {day.activities.length} activities
-                        </div>
-                        {editMode && (
-                          <Badge variant="outline" className="text-xs bg-blue-50">
-                            Drag to reorder
-                          </Badge>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Button variant="ghost" size="sm">
-                          <Plus className="h-3 w-3" />
-                        </Button>
-                      </div>
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <DndContext
-                      sensors={sensors}
-                      collisionDetection={closestCenter}
-                      onDragEnd={handleDragEnd}
-                    >
-                      <SortableContext 
-                        items={day.activities.map(a => a.id)} 
-                        strategy={verticalListSortingStrategy}
-                      >
-                        {day.activities.map((activity, index) => (
-                          <DraggableActivityItem
-                            key={activity.id}
-                            activity={activity}
-                            isLast={index === day.activities.length - 1}
-                            getTypeIcon={getTypeIcon}
-                            getStatusColor={getStatusColor}
-                            editMode={editMode}
-                          />
-                        ))}
-                      </SortableContext>
-                    </DndContext>
-                  </CardContent>
-                </Card>
+            <div className="flex items-center gap-2 pb-4">
+              <span className="text-sm font-medium">View Days:</span>
+              {itineraryData.days.map((day) => (
+                <Button
+                  key={day.day}
+                  variant={selectedDays.includes(day.day) ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => toggleDay(day.day)}
+                  className="h-8"
+                >
+                  Day {day.day}
+                </Button>
               ))}
-            </TabsContent>
-
-            <TabsContent value="map" className="mt-6">
-              <MapViewComponent activities={itineraryData.days.flatMap(day => day.activities)} />
-            </TabsContent>
-          </Tabs>
-        </div>
-
-        {/* AI Assistant Panel */}
-        {showAIPanel && (
-          <div className="w-80 shrink-0">
-            <AIAssistantPanel />
-          </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setSelectedDays(itineraryData.days.map(d => d.day))}
+                className="text-muted-foreground"
+              >
+                All Days
+              </Button>
+            </div>
+          </>
         )}
       </div>
+
+      {selectedTripId ? (
+        <div className="flex gap-6">
+          {/* Main Content */}
+          <div className={`transition-all duration-300 ${showAIPanel ? 'flex-1' : 'w-full'}`}>
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="timeline" className="flex items-center gap-2">
+                  <Calendar className="h-4 w-4" />
+                  Timeline
+                </TabsTrigger>
+                <TabsTrigger value="map" className="flex items-center gap-2">
+                  <Map className="h-4 w-4" />
+                  Map View
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="timeline" className="space-y-6 mt-6">
+                {filteredDays.map((day) => (
+                  <Card key={day.day} className={`${day.day === itineraryData.currentDay ? 'ring-2 ring-primary shadow-lg' : ''} relative overflow-hidden`}>
+                    {day.day === itineraryData.currentDay && (
+                      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-accent" />
+                    )}
+                    <CardHeader>
+                      <CardTitle className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <span>Day {day.day} - {day.date}</span>
+                          {day.day === itineraryData.currentDay && (
+                            <Badge variant="default" className="animate-pulse">Today</Badge>
+                          )}
+                          <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                            <Clock className="h-3 w-3" />
+                            {day.activities.length} activities
+                          </div>
+                          {editMode && (
+                            <Badge variant="outline" className="text-xs bg-blue-50">
+                              Drag to reorder
+                            </Badge>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Button variant="ghost" size="sm">
+                            <Plus className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <DndContext
+                        sensors={sensors}
+                        collisionDetection={closestCenter}
+                        onDragEnd={handleDragEnd}
+                      >
+                        <SortableContext 
+                          items={day.activities.map(a => a.id)} 
+                          strategy={verticalListSortingStrategy}
+                        >
+                          {day.activities.map((activity, index) => (
+                            <DraggableActivityItem
+                              key={activity.id}
+                              activity={activity}
+                              isLast={index === day.activities.length - 1}
+                              getTypeIcon={getTypeIcon}
+                              getStatusColor={getStatusColor}
+                              editMode={editMode}
+                            />
+                          ))}
+                        </SortableContext>
+                      </DndContext>
+                    </CardContent>
+                  </Card>
+                ))}
+              </TabsContent>
+
+              <TabsContent value="map" className="mt-6">
+                <MapViewComponent activities={itineraryData.days.flatMap(day => day.activities)} />
+              </TabsContent>
+            </Tabs>
+          </div>
+
+          {/* AI Assistant Panel */}
+          {showAIPanel && (
+            <div className="w-80 shrink-0">
+              <AIAssistantPanel />
+            </div>
+          )}
+        </div>
+      ) : (
+        <div className="flex items-center justify-center min-h-[400px]">
+          <Card className="w-96">
+            <CardContent className="flex flex-col items-center justify-center py-12">
+              <Calendar className="h-12 w-12 text-muted-foreground mb-4" />
+              <h3 className="text-lg font-semibold mb-2">Select a Trip</h3>
+              <p className="text-muted-foreground text-center">
+                Choose a trip from the dropdown above to view and manage its itinerary.
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
       {/* Smart Add Activity Dialog */}
       <SmartAddActivityDialog 
