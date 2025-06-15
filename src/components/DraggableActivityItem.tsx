@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Clock, MapPin, Edit, MoreVertical, Users, MessageCircle, Camera, Navigation, CheckCircle, Thermometer, Rain } from 'lucide-react';
+import { Clock, MapPin, Edit, MoreVertical, Users, MessageCircle, Camera, Navigation, CheckCircle, Thermometer, CloudRain } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -153,7 +153,7 @@ export const DraggableActivityItem: React.FC<DraggableActivityItemProps> = ({
                     {weather.temp}°F
                     {weather.rain > 0 && (
                       <>
-                        <Rain className="h-3 w-3 ml-1 text-blue-600" />
+                        <CloudRain className="h-3 w-3 ml-1 text-blue-600" />
                         {weather.rain}%
                       </>
                     )}
@@ -228,7 +228,7 @@ export const DraggableActivityItem: React.FC<DraggableActivityItemProps> = ({
                   {weather.temp}°F - {weather.condition}
                   {weather.rain > 0 && (
                     <>
-                      <Rain className="h-3 w-3 ml-2" />
+                      <CloudRain className="h-3 w-3 ml-2" />
                       {weather.rain}% chance of rain
                     </>
                   )}
