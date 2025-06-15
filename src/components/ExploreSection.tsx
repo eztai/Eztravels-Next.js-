@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { MapPin, Clock, DollarSign, Sparkles, Star } from 'lucide-react';
 import { allTripIdeas, type TripIdea } from '@/utils/mockData';
+import { tripCategories } from '@/utils/metadata';
 
 interface ExploreSectionProps {
   chatContext?: string;
@@ -62,13 +63,13 @@ export const ExploreSection: React.FC<ExploreSectionProps> = ({ chatContext = ''
 
       {/* Categories */}
       <div className="flex gap-4 justify-center flex-wrap">
-        {['Assistant Picks', 'Beach Escapes', 'Mountain Adventures', 'Cultural Cities'].map((category) => (
+        {tripCategories.map((category) => (
           <Button 
-            key={category} 
+            key={category.id} 
             variant="outline" 
             className="rounded-full hover:bg-gradient-to-r hover:from-orange-100 hover:to-blue-100 border-orange-200 transition-all duration-300"
           >
-            {category}
+            {category.name}
           </Button>
         ))}
       </div>

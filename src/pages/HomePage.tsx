@@ -10,6 +10,7 @@ import { ExploreSection } from '@/components/ExploreSection';
 import { TravelAtAGlance } from '@/components/TravelAtAGlance';
 import SearchChatAssistant from '@/components/SearchChatAssistant';
 import SignInDialog from '@/components/SignInDialog';
+import { mockUpcomingTrips, mockUserStats } from '@/utils/mockData';
 
 const HomePage: React.FC = () => {
   const navigate = useNavigate();
@@ -18,28 +19,6 @@ const HomePage: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [chatContext, setChatContext] = useState('');
   const [showSignInDialog, setShowSignInDialog] = useState(false);
-
-  // Mock upcoming trips data
-  const upcomingTrips = [
-    {
-      id: 1,
-      destination: 'Tokyo, Japan',
-      startDate: '2024-07-15',
-      endDate: '2024-07-22',
-      budget: 3500,
-      spent: 1200,
-      image: '/placeholder.svg'
-    },
-    {
-      id: 2,
-      destination: 'Paris, France',
-      startDate: '2024-08-10',
-      endDate: '2024-08-17',
-      budget: 2800,
-      spent: 800,
-      image: '/placeholder.svg'
-    }
-  ];
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', { 
@@ -104,7 +83,7 @@ const HomePage: React.FC = () => {
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {upcomingTrips.map((trip) => (
+              {mockUpcomingTrips.map((trip) => (
                 <Card key={trip.id} className="overflow-hidden hover:shadow-lg transition-shadow">
                   <div className="aspect-video bg-gradient-to-r from-blue-400 to-purple-500 relative">
                     <div className="absolute inset-0 bg-black/20" />
@@ -170,19 +149,17 @@ const HomePage: React.FC = () => {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-3xl font-bold text-green-600">$4,100</div>
+                  <div className="text-3xl font-bold text-green-600">${mockUserStats.remainingBudget.total.toLocaleString()}</div>
                   <p className="text-sm text-muted-foreground mt-1">
                     Across all active trips
                   </p>
                   <div className="mt-4 space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span>Tokyo Trip</span>
-                      <span className="text-green-600">$2,300</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span>Paris Trip</span>
-                      <span className="text-green-600">$1,800</span>
-                    </div>
+                    {mockUserStats.remainingBudget.trips.map((trip, index) => (
+                      <div key={index} className="flex justify-between text-sm">
+                        <span>{trip.name}</span>
+                        <span className="text-green-600">${trip.amount.toLocaleString()}</span>
+                      </div>
+                    ))}
                   </div>
                 </CardContent>
               </Card>
@@ -197,17 +174,17 @@ const HomePage: React.FC = () => {
                 <CardContent>
                   <div className="space-y-3">
                     <div>
-                      <div className="font-semibold">Flight to Tokyo</div>
+                      <div className="font-semibold">{mockUserStats.nextItineraryItem.title}</div>
                       <div className="text-sm text-muted-foreground">
-                        July 15, 2024 at 2:30 PM
+                        {mockUserStats.nextItineraryItem.date}
                       </div>
                     </div>
                     <div className="bg-blue-50 p-3 rounded-lg">
                       <div className="text-sm font-medium text-blue-800">
-                        Terminal 3, Gate A12
+                        {mockUserStats.nextItineraryItem.details.terminal}
                       </div>
                       <div className="text-xs text-blue-600">
-                        Check-in opens 24h before
+                        {mockUserStats.nextItineraryItem.details.note}
                       </div>
                     </div>
                   </div>
@@ -223,20 +200,17 @@ const HomePage: React.FC = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
-                    <div className="flex items-center justify-between p-3 bg-orange-50 rounded-lg">
-                      <div>
-                        <div className="font-medium text-orange-800">You owe Sarah</div>
-                        <div className="text-sm text-orange-600">Hotel booking</div>
+                    {mockUserStats.splitBills.map((bill) => (
+                      <div key={bill.id} className={`flex items-center justify-between p-3 bg-${bill.color}-50 rounded-lg`}>
+                        <div>
+                          <div className={`font-medium text-${bill.color}-800`}>
+                            {bill.type === 'owe' ? `You owe ${bill.person}` : `${bill.person} owes you`}
+                          </div>
+                          <div className={`text-sm text-${bill.color}-600`}>{bill.description}</div>
+                        </div>
+                        <div className={`text-lg font-bold text-${bill.color}-800`}>${bill.amount}</div>
                       </div>
-                      <div className="text-lg font-bold text-orange-800">$18</div>
-                    </div>
-                    <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
-                      <div>
-                        <div className="font-medium text-green-800">Mike owes you</div>
-                        <div className="text-sm text-green-600">Restaurant bill</div>
-                      </div>
-                      <div className="text-lg font-bold text-green-800">$25</div>
-                    </div>
+                    ))}
                   </div>
                 </CardContent>
               </Card>

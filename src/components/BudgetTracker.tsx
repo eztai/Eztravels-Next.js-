@@ -5,18 +5,20 @@ import { DollarSign, PieChart, TrendingUp, ArrowDownRight, ArrowUpRight, Plus } 
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-
-// Sample budget data
-const categories = [
-  { name: 'Accommodation', spent: 650, budget: 800, color: 'bg-primary' },
-  { name: 'Transportation', spent: 420, budget: 500, color: 'bg-secondary' },
-  { name: 'Food & Drinks', spent: 320, budget: 450, color: 'bg-accent' },
-  { name: 'Activities', spent: 175, budget: 300, color: 'bg-green-500' },
-  { name: 'Shopping', spent: 60, budget: 200, color: 'bg-amber-500' },
-  { name: 'Miscellaneous', spent: 0, budget: 250, color: 'bg-rose-500' }
-];
+import { budgetCategories } from '@/utils/metadata';
+import { mockBudgetData, mockRecentExpenses } from '@/utils/mockData';
 
 const BudgetTracker: React.FC = () => {
+  // Combine metadata with mock data
+  const categories = mockBudgetData.map(budgetItem => {
+    const categoryMeta = budgetCategories.find(cat => cat.id === budgetItem.categoryId);
+    return {
+      ...budgetItem,
+      name: categoryMeta?.name || 'Unknown',
+      color: categoryMeta?.color || 'bg-gray-500'
+    };
+  });
+
   const totalBudget = categories.reduce((sum, cat) => sum + cat.budget, 0);
   const totalSpent = categories.reduce((sum, cat) => sum + cat.spent, 0);
   const percentSpent = Math.round((totalSpent / totalBudget) * 100);
@@ -98,7 +100,7 @@ const BudgetTracker: React.FC = () => {
         <TabsContent value="categories">
           <div className="space-y-6">
             {categories.map(category => (
-              <div key={category.name} className="space-y-2">
+              <div key={category.categoryId} className="space-y-2">
                 <div className="flex justify-between items-center">
                   <div>
                     <span className="font-medium">{category.name}</span>
@@ -127,27 +129,15 @@ const BudgetTracker: React.FC = () => {
         
         <TabsContent value="expenses">
           <div className="space-y-4">
-            <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
-              <div>
-                <p className="font-medium">Beachfront Resort</p>
-                <p className="text-sm text-muted-foreground">May 10, 2025</p>
+            {mockRecentExpenses.map(expense => (
+              <div key={expense.id} className="flex items-center justify-between p-4 bg-muted rounded-lg">
+                <div>
+                  <p className="font-medium">{expense.name}</p>
+                  <p className="text-sm text-muted-foreground">{expense.date}</p>
+                </div>
+                <span className="font-medium">${expense.amount.toFixed(2)}</span>
               </div>
-              <span className="font-medium">$120.00</span>
-            </div>
-            <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
-              <div>
-                <p className="font-medium">Airport Taxi</p>
-                <p className="text-sm text-muted-foreground">May 10, 2025</p>
-              </div>
-              <span className="font-medium">$45.00</span>
-            </div>
-            <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
-              <div>
-                <p className="font-medium">Seafood Dinner</p>
-                <p className="text-sm text-muted-foreground">May 10, 2025</p>
-              </div>
-              <span className="font-medium">$78.50</span>
-            </div>
+            ))}
           </div>
         </TabsContent>
         
