@@ -1,17 +1,23 @@
-
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { MapPin, Clock, DollarSign, Sparkles, Star } from 'lucide-react';
 import { allTripIdeas, type TripIdea } from '@/utils/mockData';
 import { tripCategories } from '@/utils/metadata';
+import { TripIdeaDetailsDialog } from './TripIdeaDetailsDialog';
+import { AddToTripDialog } from './AddToTripDialog';
+import { toast } from 'sonner';
 
 interface ExploreSectionProps {
   chatContext?: string;
 }
 
 export const ExploreSection: React.FC<ExploreSectionProps> = ({ chatContext = '' }) => {
+  const [selectedTripIdea, setSelectedTripIdea] = useState<TripIdea | null>(null);
+  const [showDetailsDialog, setShowDetailsDialog] = useState(false);
+  const [showAddToTripDialog, setShowAddToTripDialog] = useState(false);
+
   // Filter trip ideas based on chat context
   const getFilteredTripIdeas = () => {
     if (!chatContext) return allTripIdeas;
@@ -46,6 +52,22 @@ export const ExploreSection: React.FC<ExploreSectionProps> = ({ chatContext = ''
 
   const tripIdeas = getFilteredTripIdeas();
   const isFiltered = chatContext && tripIdeas.length < allTripIdeas.length;
+
+  const handleShowDetails = (tripIdea: TripIdea) => {
+    setSelectedTripIdea(tripIdea);
+    setShowDetailsDialog(true);
+  };
+
+  const handleAddToTrip = (tripIdea: TripIdea) => {
+    setSelectedTripIdea(tripIdea);
+    setShowAddToTripDialog(true);
+  };
+
+  const handleTripCreated = () => {
+    toast.success('Trip created successfully!', {
+      description: 'Your new adventure has been added to your trips.'
+    });
+  };
 
   return (
     <div className="space-y-6">
@@ -140,10 +162,19 @@ export const ExploreSection: React.FC<ExploreSectionProps> = ({ chatContext = ''
 
               {/* Actions */}
               <div className="flex gap-2 pt-2">
-                <Button size="sm" className="flex-1 bg-gradient-to-r from-orange-500 to-blue-500 hover:shadow-lg">
+                <Button 
+                  size="sm" 
+                  className="flex-1 bg-gradient-to-r from-orange-500 to-blue-500 hover:shadow-lg"
+                  onClick={() => handleAddToTrip(trip)}
+                >
                   Add to Trip
                 </Button>
-                <Button size="sm" variant="outline" className="border-orange-200 hover:bg-orange-50">
+                <Button 
+                  size="sm" 
+                  variant="outline" 
+                  className="border-orange-200 hover:bg-orange-50"
+                  onClick={() => handleShowDetails(trip)}
+                >
                   Details
                 </Button>
               </div>
@@ -161,6 +192,21 @@ export const ExploreSection: React.FC<ExploreSectionProps> = ({ chatContext = ''
           </Button>
         </div>
       )}
+
+      {/* Dialogs */}
+      <TripIdeaDetailsDialog
+        tripIdea={selectedTripIdea}
+        open={showDetailsDialog}
+        onOpenChange={setShowDetailsDialog}
+        onAddToTrip={handleAddToTrip}
+      />
+
+      <AddToTripDialog
+        tripIdea={selectedTripIdea}
+        open={showAddToTripDialog}
+        onOpenChange={setShowAddToTripDialog}
+        onTripCreated={handleTripCreated}
+      />
     </div>
   );
 };
