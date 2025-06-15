@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Clock, MapPin, Plus, Edit, Navigation, Bot, Calendar, Map, ChevronDown, Filter, Users } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { mockItinerary } from '@/utils/mockData';
+import { mockItinerary, trips } from '@/utils/mockData';
 import { AIAssistantPanel } from '@/components/AIAssistantPanel';
 import { DraggableActivityItem } from '@/components/DraggableActivityItem';
 import { SmartAddActivityDialog } from '@/components/SmartAddActivityDialog';
@@ -43,6 +43,41 @@ const ItineraryPage: React.FC = () => {
     // In a real app, you would fetch the itinerary data for the selected trip
     console.log('Loading itinerary for trip:', newTripId);
   };
+
+  // Create aggregated data for all trips view
+  const getAllTripsData = () => {
+    const allActivities = mockItinerary.days.flatMap(day => 
+      day.activities.map(activity => ({
+        ...activity,
+        tripTitle: mockItinerary.tripTitle,
+        dayNumber: day.day,
+        date: day.date
+      }))
+    );
+
+    // Group activities by date for better organization
+    const groupedByDate = allActivities.reduce((acc, activity) => {
+      const key = activity.date;
+      if (!acc[key]) {
+        acc[key] = {
+          day: activity.dayNumber,
+          date: activity.date,
+          activities: []
+        };
+      }
+      acc[key].activities.push(activity);
+      return acc;
+    }, {} as Record<string, any>);
+
+    return {
+      tripTitle: 'All Trips Overview',
+      currentDay: 1,
+      totalDays: Object.keys(groupedByDate).length,
+      days: Object.values(groupedByDate)
+    };
+  };
+
+  const currentItineraryData = selectedTripId === 'all' ? getAllTripsData() : itineraryData;
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -98,7 +133,7 @@ const ItineraryPage: React.FC = () => {
     }
   };
 
-  const filteredDays = itineraryData.days.filter(day => 
+  const filteredDays = currentItineraryData.days.filter(day => 
     selectedDays.length === 0 || selectedDays.includes(day.day)
   );
 
@@ -160,104 +195,142 @@ const ItineraryPage: React.FC = () => {
         </div>
 
         {/* Trip Info & Day Selector */}
-        {selectedTripId !== 'all' && (
-          <>
-            <div className="pb-2">
-              <h1 className="text-3xl font-bold">{itineraryData.tripTitle}</h1>
-              <div className="flex items-center gap-4 text-muted-foreground">
-                <span>Day {itineraryData.currentDay} of {itineraryData.totalDays}</span>
+        <div className="pb-2">
+          <h1 className="text-3xl font-bold">{currentItineraryData.tripTitle}</h1>
+          <div className="flex items-center gap-4 text-muted-foreground">
+            {selectedTripId === 'all' ? (
+              <>
+                <span>{trips.length} trips • {currentItineraryData.days.length} days total</span>
+                <Badge variant="outline" className="bg-blue-50">
+                  <Users className="h-3 w-3 mr-1" />
+                  All travelers
+                </Badge>
+              </>
+            ) : (
+              <>
+                <span>Day {currentItineraryData.currentDay} of {currentItineraryData.totalDays}</span>
                 <Badge variant="outline" className="bg-blue-50">
                   <Users className="h-3 w-3 mr-1" />
                   3 travelers
                 </Badge>
-              </div>
-            </div>
+              </>
+            )}
+          </div>
+        </div>
 
-            <div className="flex items-center gap-2 pb-4">
-              <span className="text-sm font-medium">View Days:</span>
-              {itineraryData.days.map((day) => (
-                <Button
-                  key={day.day}
-                  variant={selectedDays.includes(day.day) ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => toggleDay(day.day)}
-                  className="h-8"
-                >
-                  Day {day.day}
-                </Button>
-              ))}
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setSelectedDays(itineraryData.days.map(d => d.day))}
-                className="text-muted-foreground"
-              >
-                All Days
-              </Button>
-            </div>
-          </>
-        )}
+        <div className="flex items-center gap-2 pb-4">
+          <span className="text-sm font-medium">View Days:</span>
+          {currentItineraryData.days.map((day) => (
+            <Button
+              key={day.day}
+              variant={selectedDays.includes(day.day) ? "default" : "outline"}
+              size="sm"
+              onClick={() => toggleDay(day.day)}
+              className="h-8"
+            >
+              Day {day.day}
+            </Button>
+          ))}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setSelectedDays(currentItineraryData.days.map(d => d.day))}
+            className="text-muted-foreground"
+          >
+            All Days
+          </Button>
+        </div>
       </div>
 
-      {selectedTripId === 'all' ? (
-        <div className="flex items-center justify-center min-h-[400px]">
-          <Card className="w-96">
-            <CardContent className="flex flex-col items-center justify-center py-12">
-              <Calendar className="h-12 w-12 text-muted-foreground mb-4" />
-              <h3 className="text-lg font-semibold mb-2">All Trips Overview</h3>
-              <p className="text-muted-foreground text-center">
-                Select a specific trip to view and manage its detailed itinerary, or use this view to see an overview of all your trips.
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-      ) : (
-        <div className="flex gap-6">
-          {/* Main Content */}
-          <div className={`transition-all duration-300 ${showAIPanel ? 'flex-1' : 'w-full'}`}>
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="timeline" className="flex items-center gap-2">
-                  <Calendar className="h-4 w-4" />
-                  Timeline
-                </TabsTrigger>
-                <TabsTrigger value="map" className="flex items-center gap-2">
-                  <Map className="h-4 w-4" />
-                  Map View
-                </TabsTrigger>
-              </TabsList>
+      {/* Main Content */}
+      <div className="flex gap-6">
+        <div className={`transition-all duration-300 ${showAIPanel ? 'flex-1' : 'w-full'}`}>
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="timeline" className="flex items-center gap-2">
+                <Calendar className="h-4 w-4" />
+                Timeline
+              </TabsTrigger>
+              <TabsTrigger value="map" className="flex items-center gap-2">
+                <Map className="h-4 w-4" />
+                Map View
+              </TabsTrigger>
+            </TabsList>
 
-              <TabsContent value="timeline" className="space-y-6 mt-6">
-                {filteredDays.map((day) => (
-                  <Card key={day.day} className={`${day.day === itineraryData.currentDay ? 'ring-2 ring-primary shadow-lg' : ''} relative overflow-hidden`}>
-                    {day.day === itineraryData.currentDay && (
-                      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-accent" />
-                    )}
-                    <CardHeader>
-                      <CardTitle className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <span>Day {day.day} - {day.date}</span>
-                          {day.day === itineraryData.currentDay && (
-                            <Badge variant="default" className="animate-pulse">Today</Badge>
-                          )}
-                          <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                            <Clock className="h-3 w-3" />
-                            {day.activities.length} activities
-                          </div>
-                          {editMode && (
-                            <Badge variant="outline" className="text-xs bg-blue-50">
-                              Drag to reorder
-                            </Badge>
-                          )}
+            <TabsContent value="timeline" className="space-y-6 mt-6">
+              {filteredDays.map((day) => (
+                <Card key={`${day.day}-${day.date}`} className={`${day.day === currentItineraryData.currentDay && selectedTripId !== 'all' ? 'ring-2 ring-primary shadow-lg' : ''} relative overflow-hidden`}>
+                  {day.day === currentItineraryData.currentDay && selectedTripId !== 'all' && (
+                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-accent" />
+                  )}
+                  <CardHeader>
+                    <CardTitle className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <span>Day {day.day} - {day.date}</span>
+                        {day.day === currentItineraryData.currentDay && selectedTripId !== 'all' && (
+                          <Badge variant="default" className="animate-pulse">Today</Badge>
+                        )}
+                        <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                          <Clock className="h-3 w-3" />
+                          {day.activities.length} activities
                         </div>
-                        <div className="flex items-center gap-2">
+                        {editMode && selectedTripId !== 'all' && (
+                          <Badge variant="outline" className="text-xs bg-blue-50">
+                            Drag to reorder
+                          </Badge>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {selectedTripId !== 'all' && (
                           <Button variant="ghost" size="sm">
                             <Plus className="h-3 w-3" />
                           </Button>
+                        )}
+                      </div>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {selectedTripId === 'all' ? (
+                      // For all trips view, don't use drag and drop
+                      day.activities.map((activity, index) => (
+                        <div key={activity.id} className="flex items-start gap-4 p-4 rounded-lg border bg-card relative">
+                          <div className="flex-shrink-0 mt-1">
+                            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-sm">
+                              {getTypeIcon(activity.type)}
+                            </div>
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-start justify-between gap-4">
+                              <div className="flex-1">
+                                <h4 className="font-medium text-foreground">{activity.title}</h4>
+                                <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
+                                  <Clock className="h-3 w-3" />
+                                  <span>{activity.time}</span>
+                                  <MapPin className="h-3 w-3 ml-2" />
+                                  <span>{activity.location}</span>
+                                  {selectedTripId === 'all' && activity.tripTitle && (
+                                    <>
+                                      <Badge variant="outline" className="ml-2 text-xs">
+                                        {activity.tripTitle}
+                                      </Badge>
+                                    </>
+                                  )}
+                                </div>
+                                {activity.description && (
+                                  <p className="text-sm text-muted-foreground mt-2">{activity.description}</p>
+                                )}
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <Badge className={getStatusColor(activity.status)}>
+                                  {activity.status}
+                                </Badge>
+                              </div>
+                            </div>
+                          </div>
                         </div>
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
+                      ))
+                    ) : (
+                      // For specific trip view, use drag and drop
                       <DndContext
                         sensors={sensors}
                         collisionDetection={closestCenter}
@@ -279,25 +352,25 @@ const ItineraryPage: React.FC = () => {
                           ))}
                         </SortableContext>
                       </DndContext>
-                    </CardContent>
-                  </Card>
-                ))}
-              </TabsContent>
+                    )}
+                  </CardContent>
+                </Card>
+              ))}
+            </TabsContent>
 
-              <TabsContent value="map" className="mt-6">
-                <MapViewComponent activities={itineraryData.days.flatMap(day => day.activities)} />
-              </TabsContent>
-            </Tabs>
-          </div>
-
-          {/* AI Assistant Panel */}
-          {showAIPanel && (
-            <div className="w-80 shrink-0">
-              <AIAssistantPanel />
-            </div>
-          )}
+            <TabsContent value="map" className="mt-6">
+              <MapViewComponent activities={currentItineraryData.days.flatMap(day => day.activities)} />
+            </TabsContent>
+          </Tabs>
         </div>
-      )}
+
+        {/* AI Assistant Panel */}
+        {showAIPanel && (
+          <div className="w-80 shrink-0">
+            <AIAssistantPanel />
+          </div>
+        )}
+      </div>
 
       {/* Smart Add Activity Dialog */}
       <SmartAddActivityDialog 
