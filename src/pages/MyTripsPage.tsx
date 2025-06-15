@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -121,17 +120,25 @@ const MyTripsPage: React.FC = () => {
   
   // Create events for calendar from trip data
   const getTripEvents = (date: Date) => {
-    return allTrips.filter(trip => {
+    console.log('Checking date:', date.toDateString());
+    const eventsOnDate = allTrips.filter(trip => {
       const startDate = new Date(trip.startDate);
       const endDate = new Date(trip.endDate);
-      return date >= startDate && date <= endDate;
+      console.log(`Trip ${trip.title}: ${startDate.toDateString()} to ${endDate.toDateString()}`);
+      const isInRange = date >= startDate && date <= endDate;
+      console.log(`Date ${date.toDateString()} in range for ${trip.title}:`, isInRange);
+      return isInRange;
     });
+    console.log('Events on date:', eventsOnDate);
+    return eventsOnDate;
   };
 
   // Get all trip dates for calendar highlighting
   const getTripDates = () => {
     const dates: Date[] = [];
+    console.log('All trips for calendar:', allTrips);
     allTrips.forEach(trip => {
+      console.log(`Processing trip: ${trip.title}, dates: ${trip.startDate} to ${trip.endDate}`);
       const start = new Date(trip.startDate);
       const end = new Date(trip.endDate);
       
@@ -142,6 +149,7 @@ const MyTripsPage: React.FC = () => {
         currentDate.setDate(currentDate.getDate() + 1);
       }
     });
+    console.log('Generated trip dates:', dates.map(d => d.toDateString()));
     return dates;
   };
 
