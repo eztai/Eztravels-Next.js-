@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -7,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { MapPin, Calendar, Star, Settings, Edit, LogOut, LogIn, UserPlus } from 'lucide-react';
+import { Google, Facebook, Twitter } from 'lucide-react'; // ADDED ICONS
 import { useNavigate } from 'react-router-dom';
 
 const ProfilePage: React.FC = () => {
@@ -122,12 +124,15 @@ const ProfilePage: React.FC = () => {
                 
                 <div className="grid grid-cols-3 gap-2">
                   <Button variant="outline" onClick={() => handleSocialLogin('Google')}>
+                    <Google className="h-4 w-4 mr-1" />
                     Google
                   </Button>
                   <Button variant="outline" onClick={() => handleSocialLogin('Meta')}>
+                    <Facebook className="h-4 w-4 mr-1" />
                     Meta
                   </Button>
                   <Button variant="outline" onClick={() => handleSocialLogin('X')}>
+                    <Twitter className="h-4 w-4 mr-1" />
                     X
                   </Button>
                 </div>
@@ -194,12 +199,15 @@ const ProfilePage: React.FC = () => {
                 
                 <div className="grid grid-cols-3 gap-2">
                   <Button variant="outline" onClick={() => handleSocialLogin('Google')}>
+                    <Google className="h-4 w-4 mr-1" />
                     Google
                   </Button>
                   <Button variant="outline" onClick={() => handleSocialLogin('Meta')}>
+                    <Facebook className="h-4 w-4 mr-1" />
                     Meta
                   </Button>
                   <Button variant="outline" onClick={() => handleSocialLogin('X')}>
+                    <Twitter className="h-4 w-4 mr-1" />
                     X
                   </Button>
                 </div>
