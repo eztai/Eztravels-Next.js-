@@ -19,7 +19,11 @@ import {
   DollarSign,
   Camera,
   Facebook,
-  Instagram
+  Instagram,
+  Globe,
+  Bell,
+  Shield,
+  ChevronRight
 } from 'lucide-react';
 import { authProviders } from '@/utils/metadata';
 
@@ -46,6 +50,16 @@ const ProfilePage: React.FC = () => {
     upcomingTrips: 2
   };
 
+  // Mock settings data - replace with real settings later
+  const userSettings = {
+    currency: 'USD',
+    language: 'English',
+    maxBudget: 5000,
+    emailNotifications: true,
+    pushNotifications: true,
+    locationSharing: true
+  };
+
   const handleLogin = (provider?: string) => {
     // Simulate login success
     setIsAuthenticated(true);
@@ -65,6 +79,10 @@ const ProfilePage: React.FC = () => {
 
   const handleEditProfile = () => {
     navigate('/profile/edit');
+  };
+
+  const handleOpenSettings = () => {
+    navigate('/settings');
   };
 
   const getProviderIcon = (iconName: string) => {
@@ -198,16 +216,79 @@ const ProfilePage: React.FC = () => {
         </CardContent>
       </Card>
 
-      {/* Settings */}
+      {/* Settings Overview */}
       <Card>
         <CardHeader>
-          <CardTitle>Settings</CardTitle>
+          <CardTitle className="flex items-center justify-between">
+            Settings Overview
+            <Button variant="ghost" size="sm" onClick={handleOpenSettings}>
+              View All
+              <ChevronRight className="h-4 w-4 ml-1" />
+            </Button>
+          </CardTitle>
         </CardHeader>
-        <CardContent>
-          <Button variant="outline" className="w-full justify-start gap-2">
-            <Settings className="h-4 w-4" />
-            Account Settings
-          </Button>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+              <div className="flex items-center gap-2">
+                <DollarSign className="h-4 w-4 text-muted-foreground" />
+                <div>
+                  <div className="font-medium">Currency</div>
+                  <div className="text-sm text-muted-foreground">{userSettings.currency}</div>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+              <div className="flex items-center gap-2">
+                <Globe className="h-4 w-4 text-muted-foreground" />
+                <div>
+                  <div className="font-medium">Language</div>
+                  <div className="text-sm text-muted-foreground">{userSettings.language}</div>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+              <div className="flex items-center gap-2">
+                <Plane className="h-4 w-4 text-muted-foreground" />
+                <div>
+                  <div className="font-medium">Max Budget</div>
+                  <div className="text-sm text-muted-foreground">${userSettings.maxBudget.toLocaleString()}</div>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+              <div className="flex items-center gap-2">
+                <Bell className="h-4 w-4 text-muted-foreground" />
+                <div>
+                  <div className="font-medium">Notifications</div>
+                  <div className="text-sm text-muted-foreground">
+                    {userSettings.emailNotifications && userSettings.pushNotifications ? 'All enabled' : 'Partial'}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <Separator />
+
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Shield className="h-4 w-4 text-muted-foreground" />
+              <div>
+                <div className="font-medium">Privacy & Security</div>
+                <div className="text-sm text-muted-foreground">
+                  Location sharing: {userSettings.locationSharing ? 'Enabled' : 'Disabled'}
+                </div>
+              </div>
+            </div>
+            <Button variant="outline" size="sm" onClick={handleOpenSettings}>
+              <Settings className="h-4 w-4 mr-2" />
+              Manage
+            </Button>
+          </div>
         </CardContent>
       </Card>
     </div>
