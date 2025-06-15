@@ -120,14 +120,23 @@ const spendingTimeline = [
 const BudgetPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState('summary');
   const [selectedCurrency, setSelectedCurrency] = useState('USD');
-  const [selectedTripId, setSelectedTripId] = useState<number>(1);
+  const [selectedTripId, setSelectedTripId] = useState<number | 'all'>(1);
 
-  // Get the selected trip data
-  const selectedTrip = trips.find(trip => trip.id === selectedTripId) || trips[0];
+  // Get the selected trip data or aggregate data
+  const selectedTrip = selectedTripId === 'all' ? null : trips.find(trip => trip.id === selectedTripId) || trips[0];
+  
+  // Calculate aggregated data for "All Trips"
+  const aggregatedData = {
+    totalTrips: trips.length,
+    totalBudget: trips.reduce((sum, trip) => sum + (trip.budget || 4500), 0), // fallback budget
+    totalParticipants: trips.reduce((sum, trip) => sum + trip.participants, 0),
+    destinations: [...new Set(trips.map(trip => trip.destination))].join(', ')
+  };
 
   const totalSpent = categories.reduce((sum, cat) => sum + cat.spent, 0);
-  const remainingBudget = currentTrip.totalBudget - totalSpent;
-  const spentPercentage = (totalSpent / currentTrip.totalBudget) * 100;
+  const currentBudget = selectedTripId === 'all' ? aggregatedData.totalBudget : currentTrip.totalBudget;
+  const remainingBudget = currentBudget - totalSpent;
+  const spentPercentage = (totalSpent / currentBudget) * 100;
 
   const pieChartData = categories.map(cat => ({
     name: cat.name,
@@ -150,11 +159,19 @@ const BudgetPage: React.FC = () => {
         <div className="flex items-center gap-4">
           <div>
             <label className="text-sm font-medium text-muted-foreground">Select Trip</label>
-            <Select value={selectedTripId.toString()} onValueChange={(value) => setSelectedTripId(parseInt(value))}>
+            <Select value={selectedTripId.toString()} onValueChange={(value) => setSelectedTripId(value === 'all' ? 'all' : parseInt(value))}>
               <SelectTrigger className="w-[280px] mt-1">
                 <SelectValue placeholder="Choose a trip" />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="all">
+                  <div className="flex items-center gap-2">
+                    <div>
+                      <div className="font-medium">All Trips</div>
+                      <div className="text-xs text-muted-foreground">{aggregatedData.totalTrips} trips total</div>
+                    </div>
+                  </div>
+                </SelectItem>
                 {trips.map((trip) => (
                   <SelectItem key={trip.id} value={trip.id.toString()}>
                     <div className="flex items-center gap-2">
@@ -184,28 +201,51 @@ const BudgetPage: React.FC = () => {
       {/* Trip Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold">{selectedTrip.title}</h1>
-          <div className="flex items-center gap-4 text-muted-foreground mt-2">
-            <div className="flex items-center gap-1">
-              <MapPin className="h-4 w-4" />
-              <span>{selectedTrip.destination}</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <Calendar className="h-4 w-4" />
-              <span>{selectedTrip.startDate} - {selectedTrip.endDate}</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <Users className="h-4 w-4" />
-              <span>{selectedTrip.participants} people</span>
-            </div>
-            <Badge variant={
-              selectedTrip.status === 'upcoming' ? 'default' : 
-              selectedTrip.status === 'planned' ? 'outline' : 'secondary'
-            }>
-              {selectedTrip.status === 'upcoming' ? 'Upcoming' : 
-               selectedTrip.status === 'planned' ? 'Planned' : 'Draft'}
-            </Badge>
-          </div>
+          {selectedTripId === 'all' ? (
+            <>
+              <h1 className="text-3xl font-bold">All Trips Budget</h1>
+              <div className="flex items-center gap-4 text-muted-foreground mt-2">
+                <div className="flex items-center gap-1">
+                  <MapPin className="h-4 w-4" />
+                  <span>{aggregatedData.destinations}</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <Users className="h-4 w-4" />
+                  <span>{aggregatedData.totalTrips} trips</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <Users className="h-4 w-4" />
+                  <span>{aggregatedData.totalParticipants} total participants</span>
+                </div>
+                <Badge variant="outline">Overview</Badge>
+              </div>
+            </>
+          ) : (
+            <>
+              <h1 className="text-3xl font-bold">{selectedTrip?.title}</h1>
+              <div className="flex items-center gap-4 text-muted-foreground mt-2">
+                <div className="flex items-center gap-1">
+                  <MapPin className="h-4 w-4" />
+                  <span>{selectedTrip?.destination}</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <Calendar className="h-4 w-4" />
+                  <span>{selectedTrip?.startDate} - {selectedTrip?.endDate}</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <Users className="h-4 w-4" />
+                  <span>{selectedTrip?.participants} people</span>
+                </div>
+                <Badge variant={
+                  selectedTrip?.status === 'upcoming' ? 'default' : 
+                  selectedTrip?.status === 'planned' ? 'outline' : 'secondary'
+                }>
+                  {selectedTrip?.status === 'upcoming' ? 'Upcoming' : 
+                   selectedTrip?.status === 'planned' ? 'Planned' : 'Draft'}
+                </Badge>
+              </div>
+            </>
+          )}
         </div>
       </div>
 
@@ -217,8 +257,10 @@ const BudgetPage: React.FC = () => {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">${currentTrip.totalBudget}</div>
-            <p className="text-xs text-muted-foreground">8-day trip budget</p>
+            <div className="text-2xl font-bold">${currentBudget}</div>
+            <p className="text-xs text-muted-foreground">
+              {selectedTripId === 'all' ? `${aggregatedData.totalTrips} trips combined` : '8-day trip budget'}
+            </p>
           </CardContent>
         </Card>
 
@@ -244,7 +286,10 @@ const BudgetPage: React.FC = () => {
           <CardContent>
             <div className="text-2xl font-bold text-green-600">${remainingBudget}</div>
             <p className="text-xs text-muted-foreground">
-              ${(remainingBudget / 5).toFixed(0)} per day remaining
+              {selectedTripId === 'all' 
+                ? 'Across all trips' 
+                : `$${(remainingBudget / 5).toFixed(0)} per day remaining`
+              }
             </p>
           </CardContent>
         </Card>
