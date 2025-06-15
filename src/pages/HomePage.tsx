@@ -1,13 +1,12 @@
-
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Plane, Calendar, DollarSign, Users, MapPin, Clock, CreditCard } from 'lucide-react';
+import { Plane, Calendar, DollarSign, Users, MapPin, Clock, CreditCard, LogIn } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import ExploreSection from '@/components/ExploreSection';
-import TravelAtAGlance from '@/components/TravelAtAGlance';
+import { ExploreSection } from '@/components/ExploreSection';
+import { TravelAtAGlance } from '@/components/TravelAtAGlance';
 
 const HomePage: React.FC = () => {
   const navigate = useNavigate();
