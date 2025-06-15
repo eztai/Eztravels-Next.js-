@@ -18,7 +18,10 @@ import {
   CheckCircle,
   ChevronDown,
   Share2,
-  Clock
+  Clock,
+  MoreVertical,
+  Edit,
+  Trash2
 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
@@ -46,7 +49,16 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { trips } from '@/utils/mockData';
+import { ExpenseItem } from '@/components/ExpenseItem';
+import { AddExpenseDialog } from '@/components/AddExpenseDialog';
+import { SplitExpenseDialog } from '@/components/SplitExpenseDialog';
 
 // Mock data for the current trip
 const currentTrip = {
@@ -146,15 +158,16 @@ const BudgetPage: React.FC = () => {
   const [selectedCurrency, setSelectedCurrency] = useState('USD');
   const [selectedTripId, setSelectedTripId] = useState<number | 'all'>(1);
   const [splitDialogOpen, setSplitDialogOpen] = useState(false);
+  const [addExpenseDialogOpen, setAddExpenseDialogOpen] = useState(false);
   const [selectedExpense, setSelectedExpense] = useState<any>(null);
 
   // Get the selected trip data or aggregate data
   const selectedTrip = selectedTripId === 'all' ? null : trips.find(trip => trip.id === selectedTripId) || trips[0];
   
-  // Calculate aggregated data for "All Trips"
+  // Calculate aggregated data for "All Trips" - fix the budget property issue
   const aggregatedData = {
     totalTrips: trips.length,
-    totalBudget: trips.reduce((sum, trip) => sum + (trip.budget || 4500), 0), // fallback budget with default value
+    totalBudget: trips.reduce((sum, trip) => sum + 4500, 0), // Using default budget since trips don't have budget property
     totalParticipants: trips.reduce((sum, trip) => sum + trip.participants, 0),
     destinations: [...new Set(trips.map(trip => trip.destination))].join(', ')
   };
@@ -181,6 +194,16 @@ const BudgetPage: React.FC = () => {
   const handleSplitExpense = (expense: any) => {
     setSelectedExpense(expense);
     setSplitDialogOpen(true);
+  };
+
+  const handleEditExpense = (expense: any) => {
+    setSelectedExpense(expense);
+    setAddExpenseDialogOpen(true);
+  };
+
+  const handleDeleteExpense = (expenseId: number) => {
+    console.log('Deleting expense:', expenseId);
+    // Handle delete logic here
   };
 
   return (
@@ -222,7 +245,7 @@ const BudgetPage: React.FC = () => {
             <Download className="h-4 w-4 mr-1" />
             Export
           </Button>
-          <Button className="gap-2">
+          <Button className="gap-2" onClick={() => setAddExpenseDialogOpen(true)}>
             <Plus className="h-4 w-4" />
             Add Expense
           </Button>
@@ -298,51 +321,13 @@ const BudgetPage: React.FC = () => {
             <CardContent>
               <div className="space-y-3">
                 {expenses.map((expense) => (
-                  <div key={expense.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
-                    <div className="flex items-center gap-3 flex-1">
-                      <div className="p-2 bg-muted rounded-full">
-                        <Receipt className="h-4 w-4" />
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2">
-                          <p className="font-medium">{expense.description}</p>
-                          {expense.isShared && (
-                            <Badge variant="outline" className="text-xs">
-                              Split with {expense.sharedWith.length}
-                            </Badge>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                          <span>{expense.date}</span>
-                          <span>•</span>
-                          <span>Paid by {expense.paidBy}</span>
-                          <span>•</span>
-                          <Badge variant="outline" className="text-xs">{expense.category}</Badge>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <div className="text-right">
-                        <p className="font-semibold">${expense.amount}</p>
-                      </div>
-                      {!expense.isShared ? (
-                        <Button 
-                          size="sm" 
-                          variant="outline"
-                          onClick={() => handleSplitExpense(expense)}
-                          className="gap-1"
-                        >
-                          <Share2 className="h-3 w-3" />
-                          Split
-                        </Button>
-                      ) : (
-                        <Button size="sm" variant="ghost" className="gap-1">
-                          <CheckCircle className="h-3 w-3 text-green-600" />
-                          Split
-                        </Button>
-                      )}
-                    </div>
-                  </div>
+                  <ExpenseItem
+                    key={expense.id}
+                    expense={expense}
+                    onSplit={() => handleSplitExpense(expense)}
+                    onEdit={() => handleEditExpense(expense)}
+                    onDelete={() => handleDeleteExpense(expense.id)}
+                  />
                 ))}
               </div>
             </CardContent>
@@ -513,53 +498,18 @@ const BudgetPage: React.FC = () => {
               <CardTitle>Expense Breakdown</CardTitle>
             </CardHeader>
             <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Description</TableHead>
-                    <TableHead>Paid by</TableHead>
-                    <TableHead>Shared with</TableHead>
-                    <TableHead>Category</TableHead>
-                    <TableHead>Amount</TableHead>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {expenses.map((expense) => (
-                    <TableRow key={expense.id}>
-                      <TableCell className="font-medium">{expense.description}</TableCell>
-                      <TableCell>{expense.paidBy}</TableCell>
-                      <TableCell>
-                        <div className="flex -space-x-1">
-                          {expense.sharedWith.slice(0, 2).map((person, index) => (
-                            <Avatar key={index} className="w-6 h-6 border-2 border-background">
-                              <AvatarFallback className="text-xs">
-                                {person.split(' ').map(n => n[0]).join('')}
-                              </AvatarFallback>
-                            </Avatar>
-                          ))}
-                          {expense.sharedWith.length > 2 && (
-                            <div className="w-6 h-6 rounded-full bg-muted border-2 border-background flex items-center justify-center text-xs">
-                              +{expense.sharedWith.length - 2}
-                            </div>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="outline">{expense.category}</Badge>
-                      </TableCell>
-                      <TableCell>${expense.amount}</TableCell>
-                      <TableCell>{expense.date}</TableCell>
-                      <TableCell>
-                        <Button size="sm" variant="ghost">
-                          <Send className="h-3 w-3" />
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+              <div className="space-y-3">
+                {expenses.map((expense) => (
+                  <ExpenseItem
+                    key={expense.id}
+                    expense={expense}
+                    onSplit={() => handleSplitExpense(expense)}
+                    onEdit={() => handleEditExpense(expense)}
+                    onDelete={() => handleDeleteExpense(expense.id)}
+                    showSharedWith={true}
+                  />
+                ))}
+              </div>
             </CardContent>
           </Card>
 
@@ -587,61 +537,21 @@ const BudgetPage: React.FC = () => {
         </TabsContent>
       </Tabs>
 
+      {/* Add Expense Dialog */}
+      <AddExpenseDialog 
+        open={addExpenseDialogOpen} 
+        onOpenChange={setAddExpenseDialogOpen}
+        expense={selectedExpense}
+        tripParticipants={currentTrip.participants}
+      />
+
       {/* Split Expense Dialog */}
-      <Dialog open={splitDialogOpen} onOpenChange={setSplitDialogOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Split Expense</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            {selectedExpense && (
-              <div className="p-3 bg-muted rounded-lg">
-                <p className="font-medium">{selectedExpense.description}</p>
-                <p className="text-sm text-muted-foreground">${selectedExpense.amount} • {selectedExpense.date}</p>
-              </div>
-            )}
-            <div>
-              <label className="text-sm font-medium">Split with friends</label>
-              <div className="space-y-2 mt-2">
-                {currentTrip.participants.map((participant) => (
-                  <div key={participant.id} className="flex items-center gap-2">
-                    <input type="checkbox" id={`friend-${participant.id}`} className="rounded" />
-                    <label htmlFor={`friend-${participant.id}`} className="flex items-center gap-2 flex-1">
-                      <Avatar className="w-6 h-6">
-                        <AvatarFallback className="text-xs">
-                          {participant.name.split(' ').map(n => n[0]).join('')}
-                        </AvatarFallback>
-                      </Avatar>
-                      <span className="text-sm">{participant.name}</span>
-                    </label>
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div>
-              <label className="text-sm font-medium">Split method</label>
-              <Select defaultValue="equal">
-                <SelectTrigger className="mt-2">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="equal">Split equally</SelectItem>
-                  <SelectItem value="custom">Custom amounts</SelectItem>
-                  <SelectItem value="percentage">By percentage</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="flex gap-2 pt-4">
-              <Button variant="outline" onClick={() => setSplitDialogOpen(false)} className="flex-1">
-                Cancel
-              </Button>
-              <Button onClick={() => setSplitDialogOpen(false)} className="flex-1">
-                Split Expense
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <SplitExpenseDialog
+        open={splitDialogOpen}
+        onOpenChange={setSplitDialogOpen}
+        expense={selectedExpense}
+        tripParticipants={currentTrip.participants}
+      />
     </div>
   );
 };
