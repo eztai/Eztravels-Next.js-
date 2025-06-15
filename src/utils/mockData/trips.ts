@@ -12,7 +12,7 @@ export interface Trip {
   image: string;
 }
 
-export interface EnhancedTrip extends Trip {
+export interface EnhancedTrip extends Omit<Trip, 'travelers'> {
   travelers: Array<{
     id: string;
     name: string;
