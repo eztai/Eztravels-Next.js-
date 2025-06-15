@@ -16,7 +16,7 @@ export const TripSelector: React.FC<TripSelectorProps> = ({
   onTripChange,
   placeholder = "Select a trip"
 }) => {
-  const selectedTrip = trips.find(trip => trip.id === selectedTripId);
+  const selectedTrip = trips.find(trip => trip.id.toString() === selectedTripId);
 
   return (
     <Select value={selectedTripId} onValueChange={onTripChange}>
@@ -35,7 +35,7 @@ export const TripSelector: React.FC<TripSelectorProps> = ({
       </SelectTrigger>
       <SelectContent className="w-[400px] bg-background border shadow-lg">
         {trips.map((trip) => (
-          <SelectItem key={trip.id} value={trip.id} className="p-3">
+          <SelectItem key={trip.id} value={trip.id.toString()} className="p-3">
             <div className="flex items-center justify-between w-full">
               <div className="flex-1">
                 <div className="font-medium">{trip.title}</div>
