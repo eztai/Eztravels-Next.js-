@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -126,6 +127,25 @@ const MyTripsPage: React.FC = () => {
       return date >= startDate && date <= endDate;
     });
   };
+
+  // Get all trip dates for calendar highlighting
+  const getTripDates = () => {
+    const dates: Date[] = [];
+    allTrips.forEach(trip => {
+      const start = new Date(trip.startDate);
+      const end = new Date(trip.endDate);
+      
+      // Add all dates between start and end
+      const currentDate = new Date(start);
+      while (currentDate <= end) {
+        dates.push(new Date(currentDate));
+        currentDate.setDate(currentDate.getDate() + 1);
+      }
+    });
+    return dates;
+  };
+
+  const tripDates = getTripDates();
 
   const TripCardGrid = ({ trips }: { trips: any[] }) => {
     const pinnedTripsData = trips.filter(trip => pinnedTrips.includes(trip.id));
@@ -282,12 +302,19 @@ const MyTripsPage: React.FC = () => {
                       mode="single"
                       selected={selectedDate}
                       onSelect={setSelectedDate}
-                      className="rounded-md border"
+                      className="rounded-md border pointer-events-auto"
                       modifiers={{
-                        booked: (date) => getTripEvents(date).length > 0,
+                        tripDay: (date) => 
+                          tripDates.some(tripDate => 
+                            tripDate.toDateString() === date.toDateString()
+                          )
                       }}
                       modifiersStyles={{
-                        booked: { backgroundColor: 'hsl(var(--primary))', color: 'white' },
+                        tripDay: { 
+                          backgroundColor: 'hsl(var(--primary))', 
+                          color: 'white',
+                          fontWeight: 'bold'
+                        },
                       }}
                     />
                   </CardContent>
