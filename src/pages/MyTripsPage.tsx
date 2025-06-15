@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Plus, Filter, Grid, List, Pin, PinOff, Search, Bot } from 'lucide-react';
 import { AITravelAssistant } from '@/components/AITravelAssistant';
 import { EnhancedTripCard } from '@/components/EnhancedTripCard';
-import { mockTrips, savedLocations } from '@/utils/mockData';
+import { mockTrips, savedLocations, type EnhancedTrip } from '@/utils/mockData';
 
 // Enhanced mock data with progress indicators
 const enhancedTrips = {
@@ -28,7 +27,7 @@ const enhancedTrips = {
       },
       nextActivity: 'Visit Senso-ji Temple at 9:00 AM',
       pinned: true
-    }
+    } as EnhancedTrip
   ],
   upcoming: [
     {
@@ -44,7 +43,7 @@ const enhancedTrips = {
         confirmations: { flights: false, accommodation: false }
       },
       pinned: false
-    },
+    } as EnhancedTrip,
     {
       ...mockTrips.upcoming[1],
       travelers: [
@@ -57,7 +56,7 @@ const enhancedTrips = {
         confirmations: { flights: true, accommodation: false }
       },
       pinned: false
-    }
+    } as EnhancedTrip
   ],
   past: [
     {
@@ -72,7 +71,7 @@ const enhancedTrips = {
         confirmations: { flights: true, accommodation: true }
       },
       pinned: false
-    }
+    } as EnhancedTrip
   ]
 };
 
@@ -129,7 +128,6 @@ const MyTripsPage: React.FC = () => {
   const TripCardGrid = ({ trips }: { trips: any[] }) => {
     const pinnedTripsData = trips.filter(trip => pinnedTrips.includes(trip.id));
     const unpinnedTrips = trips.filter(trip => !pinnedTrips.includes(trip.id));
-    const sortedTrips = [...pinnedTripsData, ...unpinnedTrips];
 
     return (
       <div className="space-y-4">

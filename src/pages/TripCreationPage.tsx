@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,24 +7,13 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { ArrowLeft, Send, Bot, User, MapPin, Star, Plus, Calendar } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { destinations } from '@/utils/mockData';
+import { destinations, type Destination } from '@/utils/mockData';
 
 interface Message {
   id: string;
   text: string;
   sender: 'user' | 'assistant';
   timestamp: Date;
-}
-
-interface Destination {
-  id: number;
-  name: string;
-  country: string;
-  rating: number;
-  image: string;
-  tags: string[];
-  description: string;
-  price: string;
 }
 
 const TripCreationPage: React.FC = () => {
