@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -17,7 +18,7 @@ import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSo
 const ItineraryPage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const tripId = searchParams.get('tripId');
-  const [selectedTripId, setSelectedTripId] = useState(tripId || '');
+  const [selectedTripId, setSelectedTripId] = useState(tripId || 'all');
   const [activeTab, setActiveTab] = useState('timeline');
   const [showAIPanel, setShowAIPanel] = useState(false);
   const [showAddDialog, setShowAddDialog] = useState(false);
@@ -34,7 +35,11 @@ const ItineraryPage: React.FC = () => {
 
   const handleTripChange = (newTripId: string) => {
     setSelectedTripId(newTripId);
-    setSearchParams({ tripId: newTripId });
+    if (newTripId !== 'all') {
+      setSearchParams({ tripId: newTripId });
+    } else {
+      setSearchParams({});
+    }
     // In a real app, you would fetch the itinerary data for the selected trip
     console.log('Loading itinerary for trip:', newTripId);
   };
@@ -108,17 +113,20 @@ const ItineraryPage: React.FC = () => {
               selectedTripId={selectedTripId}
               onTripChange={handleTripChange}
               placeholder="Select a trip to view itinerary"
+              showAllTripsOption={true}
             />
             
-            <div className="h-12 w-1 bg-primary rounded-full relative">
-              <div 
-                className="absolute w-3 h-3 bg-primary rounded-full -left-1 transition-all duration-500"
-                style={{ 
-                  top: `${(itineraryData.currentDay / itineraryData.totalDays) * 100}%`,
-                  transform: 'translateY(-50%)'
-                }}
-              />
-            </div>
+            {selectedTripId !== 'all' && (
+              <div className="h-12 w-1 bg-primary rounded-full relative">
+                <div 
+                  className="absolute w-3 h-3 bg-primary rounded-full -left-1 transition-all duration-500"
+                  style={{ 
+                    top: `${(itineraryData.currentDay / itineraryData.totalDays) * 100}%`,
+                    transform: 'translateY(-50%)'
+                  }}
+                />
+              </div>
+            )}
           </div>
           
           <div className="flex gap-2">
@@ -126,6 +134,7 @@ const ItineraryPage: React.FC = () => {
               variant={editMode ? "default" : "outline"} 
               size="sm"
               onClick={() => setEditMode(!editMode)}
+              disabled={selectedTripId === 'all'}
             >
               <Edit className="h-4 w-4 mr-1" />
               {editMode ? 'Done' : 'Edit'}
@@ -139,11 +148,11 @@ const ItineraryPage: React.FC = () => {
               <Bot className="h-4 w-4 mr-1" />
               AI Assistant
             </Button>
-            <Button variant="outline" size="sm">
+            <Button variant="outline" size="sm" disabled={selectedTripId === 'all'}>
               <Navigation className="h-4 w-4 mr-1" />
               Navigate
             </Button>
-            <Button size="sm" onClick={() => setShowAddDialog(true)}>
+            <Button size="sm" onClick={() => setShowAddDialog(true)} disabled={selectedTripId === 'all'}>
               <Plus className="h-4 w-4 mr-1" />
               Add Activity
             </Button>
@@ -151,7 +160,7 @@ const ItineraryPage: React.FC = () => {
         </div>
 
         {/* Trip Info & Day Selector */}
-        {selectedTripId && (
+        {selectedTripId !== 'all' && (
           <>
             <div className="pb-2">
               <h1 className="text-3xl font-bold">{itineraryData.tripTitle}</h1>
@@ -190,7 +199,19 @@ const ItineraryPage: React.FC = () => {
         )}
       </div>
 
-      {selectedTripId ? (
+      {selectedTripId === 'all' ? (
+        <div className="flex items-center justify-center min-h-[400px]">
+          <Card className="w-96">
+            <CardContent className="flex flex-col items-center justify-center py-12">
+              <Calendar className="h-12 w-12 text-muted-foreground mb-4" />
+              <h3 className="text-lg font-semibold mb-2">All Trips Overview</h3>
+              <p className="text-muted-foreground text-center">
+                Select a specific trip to view and manage its detailed itinerary, or use this view to see an overview of all your trips.
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      ) : (
         <div className="flex gap-6">
           {/* Main Content */}
           <div className={`transition-all duration-300 ${showAIPanel ? 'flex-1' : 'w-full'}`}>
@@ -275,18 +296,6 @@ const ItineraryPage: React.FC = () => {
               <AIAssistantPanel />
             </div>
           )}
-        </div>
-      ) : (
-        <div className="flex items-center justify-center min-h-[400px]">
-          <Card className="w-96">
-            <CardContent className="flex flex-col items-center justify-center py-12">
-              <Calendar className="h-12 w-12 text-muted-foreground mb-4" />
-              <h3 className="text-lg font-semibold mb-2">Select a Trip</h3>
-              <p className="text-muted-foreground text-center">
-                Choose a trip from the dropdown above to view and manage its itinerary.
-              </p>
-            </CardContent>
-          </Card>
         </div>
       )}
 

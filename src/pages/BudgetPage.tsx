@@ -36,13 +36,6 @@ import {
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { PieChart as RechartsPieChart, Cell, ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid } from 'recharts';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import {
   Dialog,
   DialogContent,
   DialogHeader,
@@ -59,6 +52,7 @@ import { trips } from '@/utils/mockData';
 import { ExpenseItem } from '@/components/ExpenseItem';
 import { AddExpenseDialog } from '@/components/AddExpenseDialog';
 import { SplitExpenseDialog } from '@/components/SplitExpenseDialog';
+import { TripSelector } from '@/components/TripSelector';
 
 // Mock data for the current trip
 const currentTrip = {
@@ -156,13 +150,13 @@ const spendingTimeline = [
 const BudgetPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState('summary');
   const [selectedCurrency, setSelectedCurrency] = useState('USD');
-  const [selectedTripId, setSelectedTripId] = useState<number | 'all'>(1);
+  const [selectedTripId, setSelectedTripId] = useState<string>('1');
   const [splitDialogOpen, setSplitDialogOpen] = useState(false);
   const [addExpenseDialogOpen, setAddExpenseDialogOpen] = useState(false);
   const [selectedExpense, setSelectedExpense] = useState<any>(null);
 
   // Get the selected trip data or aggregate data
-  const selectedTrip = selectedTripId === 'all' ? null : trips.find(trip => trip.id === selectedTripId) || trips[0];
+  const selectedTrip = selectedTripId === 'all' ? null : trips.find(trip => trip.id.toString() === selectedTripId) || trips[0];
   
   // Calculate aggregated data for "All Trips" - fix the budget property issue
   const aggregatedData = {
@@ -213,31 +207,14 @@ const BudgetPage: React.FC = () => {
         <div className="flex items-center gap-4">
           <div>
             <label className="text-sm font-medium text-muted-foreground">Select Trip</label>
-            <Select value={selectedTripId.toString()} onValueChange={(value) => setSelectedTripId(value === 'all' ? 'all' : parseInt(value))}>
-              <SelectTrigger className="w-[280px] mt-1">
-                <SelectValue placeholder="Choose a trip" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">
-                  <div className="flex items-center gap-2">
-                    <div>
-                      <div className="font-medium">All Trips</div>
-                      <div className="text-xs text-muted-foreground">{aggregatedData.totalTrips} trips total</div>
-                    </div>
-                  </div>
-                </SelectItem>
-                {trips.map((trip) => (
-                  <SelectItem key={trip.id} value={trip.id.toString()}>
-                    <div className="flex items-center gap-2">
-                      <div>
-                        <div className="font-medium">{trip.title}</div>
-                        <div className="text-xs text-muted-foreground">{trip.destination}</div>
-                      </div>
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <div className="mt-1">
+              <TripSelector
+                selectedTripId={selectedTripId}
+                onTripChange={setSelectedTripId}
+                placeholder="Choose a trip"
+                showAllTripsOption={true}
+              />
+            </div>
           </div>
         </div>
         <div className="flex gap-2">
