@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Send, Sparkles, Mic, TrendingUp, MapPin, Bot, X } from 'lucide-react';
+import { Send, Sparkles, Mic, TrendingUp, MapPin, Bot, Edit, Save, Trash2, Plus } from 'lucide-react';
 import { PersistentAIAssistant } from '@/components/PersistentAIAssistant';
 import { ExploreSection } from '@/components/ExploreSection';
 import { TravelAtAGlance } from '@/components/TravelAtAGlance';
@@ -19,30 +19,34 @@ interface Message {
   timestamp: Date;
 }
 
+interface TripItem {
+  id: string;
+  type: 'destination' | 'hotel' | 'activity' | 'flight';
+  title: string;
+  description: string;
+  cost?: number;
+  day?: number;
+  category?: string;
+}
+
 const HomePage: React.FC = () => {
   const [searchInput, setSearchInput] = useState('');
   const [isAIAssistantOpen, setIsAIAssistantOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
-  const [isAIOverlayOpen, setIsAIOverlayOpen] = useState(false);
+  const [isChatActive, setIsChatActive] = useState(false);
+  const [tripItems, setTripItems] = useState<TripItem[]>([]);
+  const [chatContext, setChatContext] = useState<string>('');
 
   const suggestedPrompts = [
     "Plan a 5-day Europe trip under $1500",
-    "What can I do in Tokyo on Day 2?",
-    "Split my last dinner bill with friends",
-    "Find flights to Paris for next month"
-  ];
-
-  const trendingIdeas = [
-    { title: "Cherry Blossom Season", icon: "🌸", description: "Japan in Spring" },
-    { title: "Summer Beach Escapes", icon: "🏖️", description: "Mediterranean coast" },
-    { title: "Mountain Adventures", icon: "🏔️", description: "Alpine hiking trails" },
-    { title: "Cultural Cities", icon: "🏛️", description: "Art & history tours" }
+    "Beach vacation in July for couples",
+    "Weekend getaway to mountains",
+    "Cultural city break in Asia"
   ];
 
   const handleSearch = () => {
     if (!searchInput.trim()) return;
     
-    // Add user message
     const userMessage: Message = {
       id: Date.now().toString(),
       text: searchInput,
@@ -51,18 +55,41 @@ const HomePage: React.FC = () => {
     };
 
     setMessages(prev => [...prev, userMessage]);
-    setIsAIOverlayOpen(true);
+    setIsChatActive(true);
+    setChatContext(searchInput.toLowerCase());
     setSearchInput('');
 
-    // Simulate AI response
+    // Simulate AI response with trip building
     setTimeout(() => {
       const aiResponse: Message = {
         id: (Date.now() + 1).toString(),
-        text: "I'd be happy to help you plan that trip! Let me start building an itinerary for you. I'll suggest destinations, activities, and help with budgeting as we chat.",
+        text: "Perfect! I'm starting to build your trip. Based on your request, I'm adding some initial suggestions to your trip draft. Let me know if you'd like to modify anything!",
         sender: 'assistant',
         timestamp: new Date()
       };
       setMessages(prev => [...prev, aiResponse]);
+
+      // Add sample trip items based on context
+      if (searchInput.toLowerCase().includes('beach')) {
+        setTripItems([
+          {
+            id: '1',
+            type: 'destination',
+            title: 'Santorini, Greece',
+            description: 'Beautiful island with stunning sunsets',
+            cost: 1200,
+            day: 1
+          },
+          {
+            id: '2',
+            type: 'hotel',
+            title: 'Oceanview Resort',
+            description: 'Luxury beachfront accommodation',
+            cost: 300,
+            day: 1
+          }
+        ]);
+      }
     }, 1000);
   };
 
@@ -72,97 +99,80 @@ const HomePage: React.FC = () => {
     }
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setSearchInput(value);
+  const addTripItem = (item: TripItem) => {
+    setTripItems(prev => [...prev, { ...item, id: Date.now().toString() }]);
   };
 
-  const handleSendMessage = () => {
-    if (!searchInput.trim()) return;
-
-    const userMessage: Message = {
-      id: Date.now().toString(),
-      text: searchInput,
-      sender: 'user',
-      timestamp: new Date()
-    };
-
-    setMessages(prev => [...prev, userMessage]);
-    setSearchInput('');
-
-    // Simulate AI response with trip building context
-    setTimeout(() => {
-      const aiResponse: Message = {
-        id: (Date.now() + 1).toString(),
-        text: "Great! I'm adding that to your trip plan. Let me suggest some options and continue building your itinerary. What else would you like to include?",
-        sender: 'assistant',
-        timestamp: new Date()
-      };
-      setMessages(prev => [...prev, aiResponse]);
-    }, 1000);
+  const removeTripItem = (id: string) => {
+    setTripItems(prev => prev.filter(item => item.id !== id));
   };
 
-  const closeAIOverlay = () => {
-    setIsAIOverlayOpen(false);
+  const getTotalCost = () => {
+    return tripItems.reduce((total, item) => total + (item.cost || 0), 0);
+  };
+
+  const getItemIcon = (type: string) => {
+    switch (type) {
+      case 'destination': return MapPin;
+      case 'hotel': return '🏨';
+      case 'activity': return '🎯';
+      case 'flight': return '✈️';
+      default: return Plus;
+    }
   };
 
   return (
-    <div className="flex h-full bg-gradient-to-br from-blue-50 via-white to-orange-50">
+    <div className="flex h-full bg-gradient-to-br from-orange-50 via-white to-blue-50 relative">
       {/* Main Content */}
-      <div className={`flex-1 transition-all duration-300 ${isAIAssistantOpen ? 'lg:mr-80' : ''}`}>
+      <div className={`flex-1 transition-all duration-300 ${tripItems.length > 0 ? 'mr-96' : 'mr-0'}`}>
         <div className="min-h-screen">
-          {/* Hero Section - AI-First Search */}
-          <div className="relative bg-gradient-to-br from-primary/10 via-secondary/5 to-accent/10 px-6 py-12 lg:py-20">
-            <div className="max-w-6xl mx-auto">
-              <div className="text-center space-y-8">
-                <div className="space-y-4">
-                  <h1 className="text-4xl lg:text-6xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-                    Your AI Travel Co-Pilot
-                  </h1>
-                  <p className="text-lg lg:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-                    Tell me where you want to go, what you want to do, or how you want to feel. 
-                    I'll create the perfect trip for you.
-                  </p>
-                </div>
-
-                {/* Primary AI Search Interface */}
-                <div className="max-w-4xl mx-auto space-y-6">
-                  <div className="relative">
-                    <div className="relative">
-                      <Sparkles className="absolute left-6 top-1/2 transform -translate-y-1/2 h-6 w-6 text-primary" />
-                      <Input
-                        placeholder="Ask me anything: 'Plan a romantic weekend in Tuscany' or 'Split expenses for Tokyo trip'"
-                        value={searchInput}
-                        onChange={handleInputChange}
-                        onKeyPress={handleKeyPress}
-                        className="pl-16 pr-24 py-8 text-lg lg:text-xl rounded-3xl border-2 border-primary/20 focus:border-primary transition-colors shadow-xl bg-white/80 backdrop-blur-sm"
-                      />
-                      <div className="absolute right-3 top-1/2 transform -translate-y-1/2 flex gap-3">
+          {/* Enhanced Header with Chat Bar */}
+          <div className="sticky top-0 z-40 bg-white/80 backdrop-blur-lg border-b border-orange-200/50 shadow-sm">
+            <div className="max-w-4xl mx-auto px-6 py-6">
+              <div className="space-y-4">
+                {/* Main Search/Chat Input */}
+                <div className="relative">
+                  <div className="absolute inset-0 bg-gradient-to-r from-orange-400 to-blue-500 rounded-3xl blur-sm opacity-20"></div>
+                  <div className="relative bg-white rounded-3xl border-2 border-transparent shadow-xl">
+                    <div className="flex items-center p-2">
+                      <div className="flex items-center flex-1 px-4">
+                        <Sparkles className="h-6 w-6 text-orange-500 mr-3" />
+                        <Input
+                          placeholder="Tell me about your dream trip... 'Beach vacation in July' or 'Weekend in Paris'"
+                          value={searchInput}
+                          onChange={(e) => setSearchInput(e.target.value)}
+                          onKeyPress={handleKeyPress}
+                          className="border-0 text-lg bg-transparent focus:ring-0 focus:ring-offset-0 placeholder:text-gray-400"
+                        />
+                      </div>
+                      <div className="flex gap-2">
                         <Button
                           size="icon"
                           variant="ghost"
-                          className="h-12 w-12 rounded-full hover:bg-primary/10"
+                          className="h-12 w-12 rounded-full hover:bg-orange-100"
                         >
-                          <Mic className="h-5 w-5" />
+                          <Mic className="h-5 w-5 text-orange-600" />
                         </Button>
                         <Button
                           onClick={handleSearch}
-                          className="h-12 w-12 rounded-full bg-gradient-to-r from-primary to-secondary hover:shadow-lg transition-all duration-300"
+                          className="h-12 w-12 rounded-full bg-gradient-to-r from-orange-500 to-blue-500 hover:shadow-lg transition-all duration-300"
                         >
                           <Send className="h-5 w-5" />
                         </Button>
                       </div>
                     </div>
                   </div>
+                </div>
 
-                  {/* Suggested Prompts */}
-                  <div className="flex flex-wrap gap-3 justify-center">
+                {/* Suggested Prompts */}
+                {!isChatActive && (
+                  <div className="flex flex-wrap gap-2 justify-center">
                     {suggestedPrompts.map((prompt, index) => (
                       <Button
                         key={index}
                         variant="outline"
                         size="sm"
-                        className="rounded-full text-sm bg-white/80 backdrop-blur-sm hover:bg-white hover:shadow-md transition-all duration-300"
+                        className="rounded-full text-sm bg-white/80 hover:bg-gradient-to-r hover:from-orange-100 hover:to-blue-100 border-orange-200 transition-all duration-300"
                         onClick={() => {
                           setSearchInput(prompt);
                           handleSearch();
@@ -172,50 +182,56 @@ const HomePage: React.FC = () => {
                       </Button>
                     ))}
                   </div>
-
-                  {/* Trending Ideas */}
-                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-8">
-                    {trendingIdeas.map((idea, index) => (
-                      <Card key={index} className="p-6 hover:shadow-lg transition-all duration-300 cursor-pointer bg-white/80 backdrop-blur-sm hover:bg-white group">
-                        <CardContent className="p-0 text-center space-y-3">
-                          <div className="text-3xl group-hover:scale-110 transition-transform duration-300">{idea.icon}</div>
-                          <div>
-                            <p className="font-semibold text-sm lg:text-base">{idea.title}</p>
-                            <p className="text-xs lg:text-sm text-muted-foreground">{idea.description}</p>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-
-                  {/* Feeling Adventurous Button */}
-                  <div className="pt-6">
-                    <Button 
-                      size="lg" 
-                      className="bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-white px-10 py-4 rounded-full shadow-xl hover:shadow-2xl transition-all duration-300 text-lg"
-                      onClick={() => {
-                        setSearchInput("Surprise me with an amazing trip!");
-                        handleSearch();
-                      }}
-                    >
-                      <Sparkles className="h-5 w-5 mr-3" />
-                      Feeling Adventurous? Surprise Me!
-                    </Button>
-                  </div>
-                </div>
+                )}
               </div>
             </div>
           </div>
 
+          {/* Chat Messages - Inline */}
+          {isChatActive && (
+            <div className="max-w-4xl mx-auto px-6 py-6">
+              <div className="space-y-4">
+                {messages.map((message) => (
+                  <div
+                    key={message.id}
+                    className={`flex items-start gap-3 ${
+                      message.sender === 'user' ? 'flex-row-reverse' : ''
+                    }`}
+                  >
+                    <Avatar className="h-10 w-10 shadow-md">
+                      <AvatarFallback className={
+                        message.sender === 'user' 
+                          ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white' 
+                          : 'bg-gradient-to-r from-orange-400 to-pink-400 text-white'
+                      }>
+                        {message.sender === 'user' ? 'U' : <Bot className="h-5 w-5" />}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className={`max-w-[80%] p-4 rounded-2xl shadow-lg ${
+                      message.sender === 'user' 
+                        ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white' 
+                        : 'bg-white border border-orange-100'
+                    }`}>
+                      <p className="text-sm leading-relaxed">{message.text}</p>
+                      <span className="text-xs opacity-70 mt-2 block">
+                        {message.timestamp.toLocaleTimeString()}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Main Content Tabs */}
-          <div className="max-w-6xl mx-auto px-6 py-8">
+          <div className="max-w-4xl mx-auto px-6 py-8">
             <Tabs defaultValue="overview" className="w-full">
-              <TabsList className="grid w-full grid-cols-2 max-w-md mx-auto mb-8 h-12">
-                <TabsTrigger value="overview" className="flex items-center gap-2 text-sm lg:text-base">
+              <TabsList className="grid w-full grid-cols-2 max-w-md mx-auto mb-8 h-12 bg-white/80 shadow-md">
+                <TabsTrigger value="overview" className="flex items-center gap-2 text-sm lg:text-base rounded-lg">
                   <TrendingUp className="h-4 w-4" />
                   <span className="hidden sm:inline">Overview</span>
                 </TabsTrigger>
-                <TabsTrigger value="explore" className="flex items-center gap-2 text-sm lg:text-base">
+                <TabsTrigger value="explore" className="flex items-center gap-2 text-sm lg:text-base rounded-lg">
                   <MapPin className="h-4 w-4" />
                   <span className="hidden sm:inline">Explore</span>
                 </TabsTrigger>
@@ -226,91 +242,88 @@ const HomePage: React.FC = () => {
               </TabsContent>
 
               <TabsContent value="explore" className="mt-8">
-                <ExploreSection />
+                <ExploreSection chatContext={chatContext} />
               </TabsContent>
             </Tabs>
           </div>
         </div>
       </div>
 
-      {/* AI Chat Overlay */}
-      {isAIOverlayOpen && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl shadow-2xl border border-primary/20 overflow-hidden max-w-4xl w-full max-h-[80vh] flex flex-col">
-            {/* Chat Header */}
-            <div className="bg-gradient-to-r from-primary to-secondary p-6 text-white">
+      {/* Fixed Trip Preview Panel */}
+      {tripItems.length > 0 && (
+        <div className="fixed right-0 top-0 h-full w-96 bg-white shadow-2xl border-l border-orange-200 z-30">
+          <div className="flex flex-col h-full">
+            {/* Trip Header */}
+            <div className="bg-gradient-to-r from-orange-500 to-blue-500 p-6 text-white">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-full bg-white/20">
-                    <Bot className="h-6 w-6" />
-                  </div>
-                  <div>
-                    <h2 className="text-xl font-bold">AI Travel Assistant</h2>
-                    <p className="text-sm text-white/80">Building your perfect trip as we chat</p>
-                  </div>
+                <div>
+                  <h2 className="text-xl font-bold">Your Trip Draft</h2>
+                  <p className="text-sm text-white/80">Building in real-time</p>
                 </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={closeAIOverlay}
-                  className="text-white hover:bg-white/20"
-                >
-                  <X className="h-5 w-5" />
-                </Button>
+                <div className="flex gap-2">
+                  <Button size="sm" variant="ghost" className="text-white hover:bg-white/20">
+                    <Edit className="h-4 w-4" />
+                  </Button>
+                  <Button size="sm" variant="ghost" className="text-white hover:bg-white/20">
+                    <Save className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+              <div className="mt-4 text-2xl font-bold">
+                ${getTotalCost().toLocaleString()}
               </div>
             </div>
 
-            {/* Chat Messages */}
-            <ScrollArea className="flex-1 p-6 min-h-0">
-              <div className="space-y-4">
-                {messages.map((message) => (
-                  <div
-                    key={message.id}
-                    className={`flex items-start gap-3 ${
-                      message.sender === 'user' ? 'flex-row-reverse' : ''
-                    }`}
-                  >
-                    <Avatar className="h-8 w-8">
-                      <AvatarFallback>
-                        {message.sender === 'user' ? 'U' : <Bot className="h-4 w-4" />}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className={`max-w-[80%] p-4 rounded-2xl ${
-                      message.sender === 'user' 
-                        ? 'bg-gradient-to-r from-primary to-secondary text-white' 
-                        : 'bg-gray-100'
-                    }`}>
-                      <p className="text-sm">{message.text}</p>
-                    </div>
-                  </div>
-                ))}
+            {/* Trip Items */}
+            <ScrollArea className="flex-1 p-4">
+              <div className="space-y-3">
+                {tripItems.map((item) => {
+                  const Icon = getItemIcon(item.type);
+                  return (
+                    <Card key={item.id} className="p-4 hover:shadow-md transition-all duration-300 border border-orange-100">
+                      <div className="flex items-start justify-between">
+                        <div className="flex items-start gap-3 flex-1">
+                          <div className="text-2xl">
+                            {typeof Icon === 'string' ? Icon : <Icon className="h-5 w-5 text-orange-500" />}
+                          </div>
+                          <div className="flex-1">
+                            <h4 className="font-semibold text-sm">{item.title}</h4>
+                            <p className="text-xs text-gray-600 mt-1">{item.description}</p>
+                            {item.day && (
+                              <Badge variant="outline" className="mt-2 text-xs">
+                                Day {item.day}
+                              </Badge>
+                            )}
+                            {item.cost && (
+                              <div className="text-sm font-semibold text-green-600 mt-1">
+                                ${item.cost}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => removeTripItem(item.id)}
+                          className="text-gray-400 hover:text-red-500"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </Card>
+                  );
+                })}
               </div>
             </ScrollArea>
 
-            {/* Chat Input */}
-            <div className="p-6 border-t bg-gray-50/50">
-              <div className="flex gap-3">
-                <div className="relative flex-1">
-                  <Input
-                    placeholder="Continue building your trip..."
-                    value={searchInput}
-                    onChange={handleInputChange}
-                    onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-                    className="pr-12 py-3 rounded-2xl border-2 border-primary/20 focus:border-primary"
-                  />
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className="absolute right-2 top-1/2 transform -translate-y-1/2 h-8 w-8 p-0 hover:bg-primary/10"
-                  >
-                    <Mic className="h-4 w-4" />
-                  </Button>
-                </div>
-                <Button 
-                  onClick={handleSendMessage} 
-                  className="px-6 py-3 rounded-2xl bg-gradient-to-r from-primary to-secondary hover:shadow-lg"
-                >
-                  <Send className="h-4 w-4" />
+            {/* Trip Actions */}
+            <div className="p-4 border-t border-orange-100 bg-gray-50">
+              <div className="flex gap-2">
+                <Button className="flex-1 bg-gradient-to-r from-orange-500 to-blue-500 hover:shadow-lg">
+                  Save Trip
+                </Button>
+                <Button variant="outline" className="border-orange-200">
+                  Share
                 </Button>
               </div>
             </div>

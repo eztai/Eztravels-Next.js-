@@ -16,9 +16,10 @@ interface TripIdea {
   tags: string[];
   aiGenerated: boolean;
   description: string;
+  category: string;
 }
 
-const tripIdeas: TripIdea[] = [
+const allTripIdeas: TripIdea[] = [
   {
     id: 1,
     title: "Cherry Blossom Adventure",
@@ -29,7 +30,8 @@ const tripIdeas: TripIdea[] = [
     rating: 4.9,
     tags: ["Culture", "Spring", "Photography"],
     aiGenerated: true,
-    description: "Experience Japan's iconic cherry blossom season"
+    description: "Experience Japan's iconic cherry blossom season",
+    category: "cultural"
   },
   {
     id: 2,
@@ -41,7 +43,8 @@ const tripIdeas: TripIdea[] = [
     rating: 4.8,
     tags: ["Beach", "Romantic", "Sunset"],
     aiGenerated: true,
-    description: "Stunning sunsets and white-washed villages"
+    description: "Stunning sunsets and white-washed villages",
+    category: "beach"
   },
   {
     id: 3,
@@ -53,7 +56,8 @@ const tripIdeas: TripIdea[] = [
     rating: 4.7,
     tags: ["Adventure", "Hiking", "Nature"],
     aiGenerated: false,
-    description: "Breathtaking mountain landscapes and hiking"
+    description: "Breathtaking mountain landscapes and hiking",
+    category: "mountain"
   },
   {
     id: 4,
@@ -65,22 +69,99 @@ const tripIdeas: TripIdea[] = [
     rating: 4.6,
     tags: ["Culture", "Markets", "Food"],
     aiGenerated: true,
-    description: "Vibrant souks and stunning architecture"
+    description: "Vibrant souks and stunning architecture",
+    category: "cultural"
+  },
+  {
+    id: 5,
+    title: "Tropical Paradise",
+    location: "Maldives",
+    duration: "7 days",
+    budget: "$4,500",
+    image: "https://source.unsplash.com/400x300/?maldives",
+    rating: 4.9,
+    tags: ["Beach", "Luxury", "Relaxation"],
+    aiGenerated: true,
+    description: "Overwater bungalows and crystal clear waters",
+    category: "beach"
+  },
+  {
+    id: 6,
+    title: "Summer Beach Getaway",
+    location: "Amalfi Coast, Italy",
+    duration: "6 days",
+    budget: "$2,800",
+    image: "https://source.unsplash.com/400x300/?amalfi-coast",
+    rating: 4.8,
+    tags: ["Beach", "Food", "July"],
+    aiGenerated: true,
+    description: "Coastal charm and Italian cuisine",
+    category: "beach"
   }
 ];
 
-export const ExploreSection: React.FC = () => {
+interface ExploreSectionProps {
+  chatContext?: string;
+}
+
+export const ExploreSection: React.FC<ExploreSectionProps> = ({ chatContext = '' }) => {
+  // Filter trip ideas based on chat context
+  const getFilteredTripIdeas = () => {
+    if (!chatContext) return allTripIdeas;
+
+    const context = chatContext.toLowerCase();
+    let filtered = allTripIdeas;
+
+    // Filter by category keywords
+    if (context.includes('beach') || context.includes('ocean') || context.includes('coast')) {
+      filtered = filtered.filter(trip => trip.category === 'beach');
+    } else if (context.includes('mountain') || context.includes('hiking') || context.includes('alpine')) {
+      filtered = filtered.filter(trip => trip.category === 'mountain');
+    } else if (context.includes('culture') || context.includes('city') || context.includes('art')) {
+      filtered = filtered.filter(trip => trip.category === 'cultural');
+    }
+
+    // Filter by season/month
+    if (context.includes('july') || context.includes('summer')) {
+      filtered = filtered.filter(trip => 
+        trip.tags.some(tag => tag.toLowerCase().includes('july')) ||
+        trip.category === 'beach'
+      );
+    }
+
+    // Mark as assistant recommended if filtered
+    if (chatContext && filtered.length < allTripIdeas.length) {
+      filtered = filtered.map(trip => ({ ...trip, aiGenerated: true }));
+    }
+
+    return filtered.length > 0 ? filtered : allTripIdeas.slice(0, 4);
+  };
+
+  const tripIdeas = getFilteredTripIdeas();
+  const isFiltered = chatContext && tripIdeas.length < allTripIdeas.length;
+
   return (
     <div className="space-y-6">
       <div className="text-center space-y-2">
-        <h2 className="text-2xl font-bold">Discover Your Next Adventure</h2>
-        <p className="text-muted-foreground">AI-curated trips based on trending destinations and your preferences</p>
+        <h2 className="text-2xl font-bold bg-gradient-to-r from-orange-600 to-blue-600 bg-clip-text text-transparent">
+          {isFiltered ? 'Recommended For You' : 'Discover Your Next Adventure'}
+        </h2>
+        <p className="text-muted-foreground">
+          {isFiltered 
+            ? 'Based on our conversation, here are perfect matches for your trip'
+            : 'AI-curated trips based on trending destinations and preferences'
+          }
+        </p>
       </div>
 
       {/* Categories */}
       <div className="flex gap-4 justify-center flex-wrap">
-        {['Top AI Picks', 'Seasonal Escapes', 'Community Favorites', 'Budget Friendly'].map((category) => (
-          <Button key={category} variant="outline" className="rounded-full">
+        {['Assistant Picks', 'Beach Escapes', 'Mountain Adventures', 'Cultural Cities'].map((category) => (
+          <Button 
+            key={category} 
+            variant="outline" 
+            className="rounded-full hover:bg-gradient-to-r hover:from-orange-100 hover:to-blue-100 border-orange-200 transition-all duration-300"
+          >
             {category}
           </Button>
         ))}
@@ -89,7 +170,7 @@ export const ExploreSection: React.FC = () => {
       {/* Trip Ideas Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {tripIdeas.map((trip) => (
-          <Card key={trip.id} className="overflow-hidden hover:shadow-lg transition-all duration-300 group">
+          <Card key={trip.id} className="overflow-hidden hover:shadow-xl transition-all duration-300 group border border-orange-100 hover:border-orange-200">
             <div 
               className="h-48 bg-cover bg-center relative"
               style={{ backgroundImage: `url(${trip.image})` }}
@@ -99,14 +180,14 @@ export const ExploreSection: React.FC = () => {
               {/* Badges */}
               <div className="absolute top-3 left-3 flex gap-2">
                 {trip.aiGenerated && (
-                  <Badge className="bg-gradient-to-r from-primary to-secondary text-white">
+                  <Badge className="bg-gradient-to-r from-orange-500 to-blue-500 text-white shadow-lg">
                     <Sparkles className="h-3 w-3 mr-1" />
-                    AI Pick
+                    {isFiltered ? 'Assistant Recommended' : 'AI Pick'}
                   </Badge>
                 )}
               </div>
               
-              <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm rounded-full px-2 py-1 flex items-center gap-1 text-sm">
+              <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm rounded-full px-2 py-1 flex items-center gap-1 text-sm shadow-md">
                 <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
                 {trip.rating}
               </div>
@@ -130,7 +211,7 @@ export const ExploreSection: React.FC = () => {
                   <Clock className="h-3 w-3" />
                   {trip.duration}
                 </div>
-                <div className="flex items-center gap-1 font-medium text-primary">
+                <div className="flex items-center gap-1 font-medium text-orange-600">
                   <DollarSign className="h-3 w-3" />
                   {trip.budget}
                 </div>
@@ -139,12 +220,12 @@ export const ExploreSection: React.FC = () => {
               {/* Tags */}
               <div className="flex flex-wrap gap-1">
                 {trip.tags.slice(0, 2).map(tag => (
-                  <Badge key={tag} variant="secondary" className="text-xs">
+                  <Badge key={tag} variant="secondary" className="text-xs bg-orange-50 text-orange-700">
                     {tag}
                   </Badge>
                 ))}
                 {trip.tags.length > 2 && (
-                  <Badge variant="outline" className="text-xs">
+                  <Badge variant="outline" className="text-xs border-orange-200">
                     +{trip.tags.length - 2}
                   </Badge>
                 )}
@@ -152,11 +233,11 @@ export const ExploreSection: React.FC = () => {
 
               {/* Actions */}
               <div className="flex gap-2 pt-2">
-                <Button size="sm" className="flex-1">
-                  Start Planning
+                <Button size="sm" className="flex-1 bg-gradient-to-r from-orange-500 to-blue-500 hover:shadow-lg">
+                  Add to Trip
                 </Button>
-                <Button size="sm" variant="outline">
-                  Customize
+                <Button size="sm" variant="outline" className="border-orange-200 hover:bg-orange-50">
+                  Details
                 </Button>
               </div>
             </CardContent>
@@ -164,13 +245,15 @@ export const ExploreSection: React.FC = () => {
         ))}
       </div>
 
-      {/* Feeling Adventurous */}
-      <div className="text-center pt-6">
-        <Button size="lg" variant="outline" className="bg-gradient-to-r from-primary/10 to-secondary/10 border-primary/20">
-          <Sparkles className="h-4 w-4 mr-2" />
-          Feeling Adventurous? Surprise Me!
-        </Button>
-      </div>
+      {/* Load More */}
+      {!isFiltered && (
+        <div className="text-center pt-6">
+          <Button size="lg" variant="outline" className="bg-gradient-to-r from-orange-50 to-blue-50 border-orange-200 hover:shadow-lg">
+            <Sparkles className="h-4 w-4 mr-2" />
+            Show More Adventures
+          </Button>
+        </div>
+      )}
     </div>
   );
 };
