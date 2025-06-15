@@ -5,11 +5,14 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Filter, Grid, List, Pin, PinOff, Search, Bot } from 'lucide-react';
-import { AITravelAssistant } from '@/components/AITravelAssistant';
+import { Plus, Pin, PinOff } from 'lucide-react';
 import { EnhancedTripCard } from '@/components/EnhancedTripCard';
 import { mockTrips, savedLocations, type EnhancedTrip } from '@/utils/mockData';
+import { PageLayout } from '@/components/PageLayout';
+import { PageHeader } from '@/components/PageHeader';
+import { TripViewControls } from '@/components/TripViewControls';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Filter, Grid, List, Pin as PinIcon, PinOff as PinOffIcon, Search, Bot } from 'lucide-react';
 
 // Enhanced mock data with progress indicators
 const enhancedTrips = {
@@ -82,7 +85,6 @@ const MyTripsPage: React.FC = () => {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [sortBy, setSortBy] = useState('date');
   const [filterBy, setFilterBy] = useState('all');
-  const [showAIAssistant, setShowAIAssistant] = useState(false);
   const [pinnedTrips, setPinnedTrips] = useState<number[]>([1]);
 
   const formatDate = (dateString: string) => {
@@ -194,113 +196,63 @@ const MyTripsPage: React.FC = () => {
   };
 
   return (
-    <div className="p-6 space-y-6">
-      {/* Header */}
-      <div className="flex justify-between items-start">
-        <div>
-          <h1 className="text-3xl font-bold">My Trips</h1>
-          <p className="text-muted-foreground">Manage your travel adventures with smart insights</p>
-        </div>
-        <div className="flex gap-2">
-          <Button 
-            variant="outline" 
-            size="sm"
-            onClick={() => setShowAIAssistant(!showAIAssistant)}
-            className={showAIAssistant ? 'bg-primary/10' : ''}
-          >
-            <Bot className="h-4 w-4 mr-2" />
-            AI Assistant
-          </Button>
+    <PageLayout>
+      <div className="p-6 space-y-6">
+        <PageHeader 
+          title="My Trips" 
+          description="Manage your travel adventures with smart insights"
+        >
           <Button className="gap-2" onClick={() => navigate('/trips/new')}>
             <Plus className="h-4 w-4" />
             New Trip
           </Button>
-        </div>
-      </div>
+        </PageHeader>
 
-      {/* Main Content */}
-      <div className="flex gap-6">
-        <div className={`transition-all duration-300 ${showAIAssistant ? 'flex-1' : 'w-full'}`}>
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <div className="flex justify-between items-center mb-6">
-              <TabsList className="grid grid-cols-5">
-                <TabsTrigger value="current">Current</TabsTrigger>
-                <TabsTrigger value="upcoming">Upcoming</TabsTrigger>
-                <TabsTrigger value="past">Past</TabsTrigger>
-                <TabsTrigger value="saved">Saved</TabsTrigger>
-                <TabsTrigger value="calendar">Calendar</TabsTrigger>
-              </TabsList>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <div className="flex justify-between items-center mb-6">
+            <TabsList className="grid grid-cols-5">
+              <TabsTrigger value="current">Current</TabsTrigger>
+              <TabsTrigger value="upcoming">Upcoming</TabsTrigger>
+              <TabsTrigger value="past">Past</TabsTrigger>
+              <TabsTrigger value="saved">Saved</TabsTrigger>
+              <TabsTrigger value="calendar">Calendar</TabsTrigger>
+            </TabsList>
 
-              {activeTab !== 'calendar' && activeTab !== 'saved' && (
-                <div className="flex gap-2">
-                  <Select value={sortBy} onValueChange={setSortBy}>
-                    <SelectTrigger className="w-[120px]">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="date">Sort by Date</SelectItem>
-                      <SelectItem value="name">Sort by Name</SelectItem>
-                      <SelectItem value="budget">Sort by Budget</SelectItem>
-                    </SelectContent>
-                  </Select>
+            <TripViewControls
+              sortBy={sortBy}
+              onSortChange={setSortBy}
+              filterBy={filterBy}
+              onFilterChange={setFilterBy}
+              viewMode={viewMode}
+              onViewModeChange={setViewMode}
+              showControls={activeTab !== 'calendar' && activeTab !== 'saved'}
+            />
+          </div>
 
-                  <Select value={filterBy} onValueChange={setFilterBy}>
-                    <SelectTrigger className="w-[120px]">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Trips</SelectItem>
-                      <SelectItem value="solo">Solo Travel</SelectItem>
-                      <SelectItem value="group">Group Travel</SelectItem>
-                    </SelectContent>
-                  </Select>
+          <TabsContent value="current" className="space-y-4">
+            {enhancedTrips.current.length > 0 ? (
+              <TripCardGrid trips={enhancedTrips.current} />
+            ) : (
+              <div className="text-center p-12">
+                <h3 className="text-lg font-medium mb-2">No current trips</h3>
+                <p className="text-sm text-muted-foreground mb-4">Start planning your next adventure</p>
+                <Button onClick={() => navigate('/trips/new')}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Create New Trip
+                </Button>
+              </div>
+            )}
+          </TabsContent>
 
-                  <div className="flex border rounded-md">
-                    <Button
-                      variant={viewMode === 'grid' ? 'default' : 'ghost'}
-                      size="sm"
-                      onClick={() => setViewMode('grid')}
-                      className="rounded-r-none"
-                    >
-                      <Grid className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant={viewMode === 'list' ? 'default' : 'ghost'}
-                      size="sm"
-                      onClick={() => setViewMode('list')}
-                      className="rounded-l-none"
-                    >
-                      <List className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              )}
-            </div>
+          <TabsContent value="upcoming" className="space-y-4">
+            <TripCardGrid trips={enhancedTrips.upcoming} />
+          </TabsContent>
 
-            <TabsContent value="current" className="space-y-4">
-              {enhancedTrips.current.length > 0 ? (
-                <TripCardGrid trips={enhancedTrips.current} />
-              ) : (
-                <div className="text-center p-12">
-                  <h3 className="text-lg font-medium mb-2">No current trips</h3>
-                  <p className="text-sm text-muted-foreground mb-4">Start planning your next adventure</p>
-                  <Button onClick={() => navigate('/trips/new')}>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Create New Trip
-                  </Button>
-                </div>
-              )}
-            </TabsContent>
+          <TabsContent value="past" className="space-y-4">
+            <TripCardGrid trips={enhancedTrips.past} />
+          </TabsContent>
 
-            <TabsContent value="upcoming" className="space-y-4">
-              <TripCardGrid trips={enhancedTrips.upcoming} />
-            </TabsContent>
-
-            <TabsContent value="past" className="space-y-4">
-              <TripCardGrid trips={enhancedTrips.past} />
-            </TabsContent>
-
-            <TabsContent value="saved" className="space-y-4">
+          <TabsContent value="saved" className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {savedLocations.map(location => (
                   <Card key={location.id}>
@@ -317,9 +269,9 @@ const MyTripsPage: React.FC = () => {
                   </Card>
                 ))}
               </div>
-            </TabsContent>
+          </TabsContent>
 
-            <TabsContent value="calendar" className="space-y-4">
+          <TabsContent value="calendar" className="space-y-4">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <Card>
                   <CardHeader>
@@ -384,27 +336,10 @@ const MyTripsPage: React.FC = () => {
                   </CardContent>
                 </Card>
               </div>
-            </TabsContent>
-          </Tabs>
-        </div>
-
-        {/* AI Assistant Panel */}
-        {showAIAssistant && (
-          <AITravelAssistant 
-            isOpen={showAIAssistant} 
-            onToggle={() => setShowAIAssistant(!showAIAssistant)} 
-          />
-        )}
+          </TabsContent>
+        </Tabs>
       </div>
-
-      {/* Floating AI Assistant */}
-      {!showAIAssistant && (
-        <AITravelAssistant 
-          isOpen={false} 
-          onToggle={() => setShowAIAssistant(true)} 
-        />
-      )}
-    </div>
+    </PageLayout>
   );
 };
 

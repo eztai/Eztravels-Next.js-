@@ -3,14 +3,14 @@ import { useSearchParams } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Clock, MapPin, Plus, Edit, Navigation, Bot, Calendar, Map, ChevronDown, Filter, Users } from 'lucide-react';
+import { Clock, MapPin, Plus, Edit, Navigation, Calendar, Map, Users } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { mockItinerary, trips } from '@/utils/mockData';
-import { AIAssistantPanel } from '@/components/AIAssistantPanel';
 import { DraggableActivityItem } from '@/components/DraggableActivityItem';
 import { SmartAddActivityDialog } from '@/components/SmartAddActivityDialog';
 import { MapViewComponent } from '@/components/MapViewComponent';
 import { TripSelector } from '@/components/TripSelector';
+import { PageLayout } from '@/components/PageLayout';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable';
 
@@ -19,7 +19,6 @@ const ItineraryPage: React.FC = () => {
   const tripId = searchParams.get('tripId');
   const [selectedTripId, setSelectedTripId] = useState(tripId || 'all');
   const [activeTab, setActiveTab] = useState('timeline');
-  const [showAIPanel, setShowAIPanel] = useState(false);
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [selectedDays, setSelectedDays] = useState<number[]>([mockItinerary.currentDay]);
   const [editMode, setEditMode] = useState(false);
@@ -137,246 +136,228 @@ const ItineraryPage: React.FC = () => {
   );
 
   return (
-    <div className="p-6 space-y-6">
-      {/* Sticky Navigation Header */}
-      <div className="sticky top-0 z-40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
-        <div className="flex justify-between items-center py-4">
-          <div className="flex items-center gap-4">
-            {/* Trip Selector */}
-            <TripSelector
-              selectedTripId={selectedTripId}
-              onTripChange={handleTripChange}
-              placeholder="Select a trip to view itinerary"
-              showAllTripsOption={true}
-            />
+    <PageLayout>
+      <div className="p-6 space-y-6">
+        {/* Sticky Navigation Header */}
+        <div className="sticky top-0 z-40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
+          <div className="flex justify-between items-center py-4">
+            <div className="flex items-center gap-4">
+              {/* Trip Selector */}
+              <TripSelector
+                selectedTripId={selectedTripId}
+                onTripChange={handleTripChange}
+                placeholder="Select a trip to view itinerary"
+                showAllTripsOption={true}
+              />
+              
+              {selectedTripId !== 'all' && (
+                <div className="h-12 w-1 bg-primary rounded-full relative">
+                  <div 
+                    className="absolute w-3 h-3 bg-primary rounded-full -left-1 transition-all duration-500"
+                    style={{ 
+                      top: `${(itineraryData.currentDay / itineraryData.totalDays) * 100}%`,
+                      transform: 'translateY(-50%)'
+                    }}
+                  />
+                </div>
+              )}
+            </div>
             
-            {selectedTripId !== 'all' && (
-              <div className="h-12 w-1 bg-primary rounded-full relative">
-                <div 
-                  className="absolute w-3 h-3 bg-primary rounded-full -left-1 transition-all duration-500"
-                  style={{ 
-                    top: `${(itineraryData.currentDay / itineraryData.totalDays) * 100}%`,
-                    transform: 'translateY(-50%)'
-                  }}
-                />
-              </div>
-            )}
+            <div className="flex gap-2">
+              <Button 
+                variant={editMode ? "default" : "outline"} 
+                size="sm"
+                onClick={() => setEditMode(!editMode)}
+                disabled={selectedTripId === 'all'}
+              >
+                <Edit className="h-4 w-4 mr-1" />
+                {editMode ? 'Done' : 'Edit'}
+              </Button>
+              <Button variant="outline" size="sm" disabled={selectedTripId === 'all'}>
+                <Navigation className="h-4 w-4 mr-1" />
+                Navigate
+              </Button>
+              <Button size="sm" onClick={() => setShowAddDialog(true)} disabled={selectedTripId === 'all'}>
+                <Plus className="h-4 w-4 mr-1" />
+                Add Activity
+              </Button>
+            </div>
           </div>
-          
-          <div className="flex gap-2">
-            <Button 
-              variant={editMode ? "default" : "outline"} 
-              size="sm"
-              onClick={() => setEditMode(!editMode)}
-              disabled={selectedTripId === 'all'}
-            >
-              <Edit className="h-4 w-4 mr-1" />
-              {editMode ? 'Done' : 'Edit'}
-            </Button>
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={() => setShowAIPanel(!showAIPanel)}
-              className={showAIPanel ? 'bg-primary/10' : ''}
-            >
-              <Bot className="h-4 w-4 mr-1" />
-              AI Assistant
-            </Button>
-            <Button variant="outline" size="sm" disabled={selectedTripId === 'all'}>
-              <Navigation className="h-4 w-4 mr-1" />
-              Navigate
-            </Button>
-            <Button size="sm" onClick={() => setShowAddDialog(true)} disabled={selectedTripId === 'all'}>
-              <Plus className="h-4 w-4 mr-1" />
-              Add Activity
-            </Button>
-          </div>
-        </div>
 
-        {/* Trip Info & Day Selector */}
-        <div className="pb-2">
-          <h1 className="text-3xl font-bold">{currentItineraryData.tripTitle}</h1>
-          <div className="flex items-center gap-4 text-muted-foreground">
-            {selectedTripId === 'all' ? (
-              <>
-                <span>{trips.length} trips • {currentItineraryData.days.length} days total</span>
-                <Badge variant="outline" className="bg-blue-50">
-                  <Users className="h-3 w-3 mr-1" />
-                  All travelers
-                </Badge>
-              </>
-            ) : (
-              <>
-                <span>Day {currentItineraryData.currentDay} of {currentItineraryData.totalDays}</span>
-                <Badge variant="outline" className="bg-blue-50">
-                  <Users className="h-3 w-3 mr-1" />
-                  3 travelers
-                </Badge>
-              </>
-            )}
+          {/* Trip Info & Day Selector */}
+          <div className="pb-2">
+            <h1 className="text-3xl font-bold">{currentItineraryData.tripTitle}</h1>
+            <div className="flex items-center gap-4 text-muted-foreground">
+              {selectedTripId === 'all' ? (
+                <>
+                  <span>{trips.length} trips • {currentItineraryData.days.length} days total</span>
+                  <Badge variant="outline" className="bg-blue-50">
+                    <Users className="h-3 w-3 mr-1" />
+                    All travelers
+                  </Badge>
+                </>
+              ) : (
+                <>
+                  <span>Day {currentItineraryData.currentDay} of {currentItineraryData.totalDays}</span>
+                  <Badge variant="outline" className="bg-blue-50">
+                    <Users className="h-3 w-3 mr-1" />
+                    3 travelers
+                  </Badge>
+                </>
+              )}
+            </div>
           </div>
-        </div>
 
-        <div className="flex items-center gap-2 pb-4">
-          <span className="text-sm font-medium">View Days:</span>
-          {currentItineraryData.days.map((day) => (
+          <div className="flex items-center gap-2 pb-4">
+            <span className="text-sm font-medium">View Days:</span>
+            {currentItineraryData.days.map((day) => (
+              <Button
+                key={day.day}
+                variant={selectedDays.includes(day.day) ? "default" : "outline"}
+                size="sm"
+                onClick={() => toggleDay(day.day)}
+                className="h-8"
+              >
+                Day {day.day}
+              </Button>
+            ))}
             <Button
-              key={day.day}
-              variant={selectedDays.includes(day.day) ? "default" : "outline"}
+              variant="ghost"
               size="sm"
-              onClick={() => toggleDay(day.day)}
-              className="h-8"
+              onClick={() => setSelectedDays(currentItineraryData.days.map(d => d.day))}
+              className="text-muted-foreground"
             >
-              Day {day.day}
+              All Days
             </Button>
-          ))}
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setSelectedDays(currentItineraryData.days.map(d => d.day))}
-            className="text-muted-foreground"
-          >
-            All Days
-          </Button>
+          </div>
         </div>
-      </div>
 
-      {/* Main Content */}
-      <div className="flex gap-6">
-        <div className={`transition-all duration-300 ${showAIPanel ? 'flex-1' : 'w-full'}`}>
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="timeline" className="flex items-center gap-2">
-                <Calendar className="h-4 w-4" />
-                Timeline
-              </TabsTrigger>
-              <TabsTrigger value="map" className="flex items-center gap-2">
-                <Map className="h-4 w-4" />
-                Map View
-              </TabsTrigger>
-            </TabsList>
+        {/* Main Content */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="timeline" className="flex items-center gap-2">
+              <Calendar className="h-4 w-4" />
+              Timeline
+            </TabsTrigger>
+            <TabsTrigger value="map" className="flex items-center gap-2">
+              <Map className="h-4 w-4" />
+              Map View
+            </TabsTrigger>
+          </TabsList>
 
-            <TabsContent value="timeline" className="space-y-6 mt-6">
-              {filteredDays.map((day) => (
-                <Card key={`${day.day}-${day.date}`} className={`${day.day === currentItineraryData.currentDay && selectedTripId !== 'all' ? 'ring-2 ring-primary shadow-lg' : ''} relative overflow-hidden`}>
-                  {day.day === currentItineraryData.currentDay && selectedTripId !== 'all' && (
-                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-accent" />
-                  )}
-                  <CardHeader>
-                    <CardTitle className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <span>Day {day.day} - {day.date}</span>
-                        {day.day === currentItineraryData.currentDay && selectedTripId !== 'all' && (
-                          <Badge variant="default" className="animate-pulse">Today</Badge>
-                        )}
-                        <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                          <Clock className="h-3 w-3" />
-                          {day.activities.length} activities
-                        </div>
-                        {editMode && selectedTripId !== 'all' && (
-                          <Badge variant="outline" className="text-xs bg-blue-50">
-                            Drag to reorder
-                          </Badge>
-                        )}
+          <TabsContent value="timeline" className="space-y-6 mt-6">
+            {filteredDays.map((day) => (
+              <Card key={`${day.day}-${day.date}`} className={`${day.day === currentItineraryData.currentDay && selectedTripId !== 'all' ? 'ring-2 ring-primary shadow-lg' : ''} relative overflow-hidden`}>
+                {day.day === currentItineraryData.currentDay && selectedTripId !== 'all' && (
+                  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-accent" />
+                )}
+                <CardHeader>
+                  <CardTitle className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <span>Day {day.day} - {day.date}</span>
+                      {day.day === currentItineraryData.currentDay && selectedTripId !== 'all' && (
+                        <Badge variant="default" className="animate-pulse">Today</Badge>
+                      )}
+                      <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                        <Clock className="h-3 w-3" />
+                        {day.activities.length} activities
                       </div>
-                      <div className="flex items-center gap-2">
-                        {selectedTripId !== 'all' && (
-                          <Button variant="ghost" size="sm">
-                            <Plus className="h-3 w-3" />
-                          </Button>
-                        )}
-                      </div>
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    {selectedTripId === 'all' ? (
-                      // For all trips view, don't use drag and drop
-                      day.activities.map((activity, index) => (
-                        <div key={activity.id} className="flex items-start gap-4 p-4 rounded-lg border bg-card relative">
-                          <div className="flex-shrink-0 mt-1">
-                            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-sm">
-                              {getTypeIcon(activity.type)}
-                            </div>
+                      {editMode && selectedTripId !== 'all' && (
+                        <Badge variant="outline" className="text-xs bg-blue-50">
+                          Drag to reorder
+                        </Badge>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {selectedTripId !== 'all' && (
+                        <Button variant="ghost" size="sm">
+                          <Plus className="h-3 w-3" />
+                        </Button>
+                      )}
+                    </div>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {selectedTripId === 'all' ? (
+                    // For all trips view, don't use drag and drop
+                    day.activities.map((activity, index) => (
+                      <div key={activity.id} className="flex items-start gap-4 p-4 rounded-lg border bg-card relative">
+                        <div className="flex-shrink-0 mt-1">
+                          <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-sm">
+                            {getTypeIcon(activity.type)}
                           </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-start justify-between gap-4">
-                              <div className="flex-1">
-                                <h4 className="font-medium text-foreground">{activity.title}</h4>
-                                <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
-                                  <Clock className="h-3 w-3" />
-                                  <span>{activity.time}</span>
-                                  <MapPin className="h-3 w-3 ml-2" />
-                                  <span>{activity.location}</span>
-                                  {selectedTripId === 'all' && activity.tripTitle && (
-                                    <>
-                                      <Badge variant="outline" className="ml-2 text-xs">
-                                        {activity.tripTitle}
-                                      </Badge>
-                                    </>
-                                  )}
-                                </div>
-                                {activity.description && (
-                                  <p className="text-sm text-muted-foreground mt-2">{activity.description}</p>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-start justify-between gap-4">
+                            <div className="flex-1">
+                              <h4 className="font-medium text-foreground">{activity.title}</h4>
+                              <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
+                                <Clock className="h-3 w-3" />
+                                <span>{activity.time}</span>
+                                <MapPin className="h-3 w-3 ml-2" />
+                                <span>{activity.location}</span>
+                                {selectedTripId === 'all' && activity.tripTitle && (
+                                  <>
+                                    <Badge variant="outline" className="ml-2 text-xs">
+                                      {activity.tripTitle}
+                                    </Badge>
+                                  </>
                                 )}
                               </div>
-                              <div className="flex items-center gap-2">
-                                <Badge className={getStatusColor(activity.status)}>
-                                  {activity.status}
-                                </Badge>
-                              </div>
+                              {activity.description && (
+                                <p className="text-sm text-muted-foreground mt-2">{activity.description}</p>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Badge className={getStatusColor(activity.status)}>
+                                {activity.status}
+                              </Badge>
                             </div>
                           </div>
                         </div>
-                      ))
-                    ) : (
-                      // For specific trip view, use drag and drop
-                      <DndContext
-                        sensors={sensors}
-                        collisionDetection={closestCenter}
-                        onDragEnd={handleDragEnd}
+                      </div>
+                    ))
+                  ) : (
+                    // For specific trip view, use drag and drop
+                    <DndContext
+                      sensors={sensors}
+                      collisionDetection={closestCenter}
+                      onDragEnd={handleDragEnd}
+                    >
+                      <SortableContext 
+                        items={day.activities.map(a => a.id)} 
+                        strategy={verticalListSortingStrategy}
                       >
-                        <SortableContext 
-                          items={day.activities.map(a => a.id)} 
-                          strategy={verticalListSortingStrategy}
-                        >
-                          {day.activities.map((activity, index) => (
-                            <DraggableActivityItem
-                              key={activity.id}
-                              activity={activity}
-                              isLast={index === day.activities.length - 1}
-                              getTypeIcon={getTypeIcon}
-                              getStatusColor={getStatusColor}
-                              editMode={editMode}
-                            />
-                          ))}
-                        </SortableContext>
-                      </DndContext>
-                    )}
-                  </CardContent>
-                </Card>
-              ))}
-            </TabsContent>
+                        {day.activities.map((activity, index) => (
+                          <DraggableActivityItem
+                            key={activity.id}
+                            activity={activity}
+                            isLast={index === day.activities.length - 1}
+                            getTypeIcon={getTypeIcon}
+                            getStatusColor={getStatusColor}
+                            editMode={editMode}
+                          />
+                        ))}
+                      </SortableContext>
+                    </DndContext>
+                  )}
+                </CardContent>
+              </Card>
+            ))}
+          </TabsContent>
 
-            <TabsContent value="map" className="mt-6">
-              <MapViewComponent activities={currentItineraryData.days.flatMap(day => day.activities)} />
-            </TabsContent>
-          </Tabs>
-        </div>
+          <TabsContent value="map" className="mt-6">
+            <MapViewComponent activities={currentItineraryData.days.flatMap(day => day.activities)} />
+          </TabsContent>
+        </Tabs>
 
-        {/* AI Assistant Panel */}
-        {showAIPanel && (
-          <div className="w-80 shrink-0">
-            <AIAssistantPanel />
-          </div>
-        )}
+        {/* Smart Add Activity Dialog */}
+        <SmartAddActivityDialog 
+          open={showAddDialog} 
+          onOpenChange={setShowAddDialog}
+        />
       </div>
-
-      {/* Smart Add Activity Dialog */}
-      <SmartAddActivityDialog 
-        open={showAddDialog} 
-        onOpenChange={setShowAddDialog}
-      />
-    </div>
+    </PageLayout>
   );
 };
 
