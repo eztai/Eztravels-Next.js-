@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -16,7 +15,8 @@ import {
   UserPlus,
   Send,
   Download,
-  CheckCircle
+  CheckCircle,
+  ChevronDown
 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
@@ -30,6 +30,14 @@ import {
 } from '@/components/ui/table';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { PieChart as RechartsPieChart, Cell, ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid } from 'recharts';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { trips } from '@/utils/mockData';
 
 // Mock data for the current trip
 const currentTrip = {
@@ -112,6 +120,10 @@ const spendingTimeline = [
 const BudgetPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState('summary');
   const [selectedCurrency, setSelectedCurrency] = useState('USD');
+  const [selectedTripId, setSelectedTripId] = useState<number>(1);
+
+  // Get the selected trip data
+  const selectedTrip = trips.find(trip => trip.id === selectedTripId) || trips[0];
 
   const totalSpent = categories.reduce((sum, cat) => sum + cat.spent, 0);
   const remainingBudget = currentTrip.totalBudget - totalSpent;
@@ -133,23 +145,28 @@ const BudgetPage: React.FC = () => {
 
   return (
     <div className="p-6 space-y-6">
-      {/* Trip Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div>
-          <h1 className="text-3xl font-bold">{currentTrip.name}</h1>
-          <div className="flex items-center gap-4 text-muted-foreground mt-2">
-            <div className="flex items-center gap-1">
-              <MapPin className="h-4 w-4" />
-              <span>{currentTrip.destination}</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <Calendar className="h-4 w-4" />
-              <span>{currentTrip.startDate} - {currentTrip.endDate}</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <Users className="h-4 w-4" />
-              <span>{currentTrip.participants.length} people</span>
-            </div>
+      {/* Trip Selector */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div className="flex items-center gap-4">
+          <div>
+            <label className="text-sm font-medium text-muted-foreground">Select Trip</label>
+            <Select value={selectedTripId.toString()} onValueChange={(value) => setSelectedTripId(parseInt(value))}>
+              <SelectTrigger className="w-[280px] mt-1">
+                <SelectValue placeholder="Choose a trip" />
+              </SelectTrigger>
+              <SelectContent>
+                {trips.map((trip) => (
+                  <SelectItem key={trip.id} value={trip.id.toString()}>
+                    <div className="flex items-center gap-2">
+                      <div>
+                        <div className="font-medium">{trip.title}</div>
+                        <div className="text-xs text-muted-foreground">{trip.destination}</div>
+                      </div>
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </div>
         <div className="flex gap-2">
@@ -161,6 +178,34 @@ const BudgetPage: React.FC = () => {
             <Plus className="h-4 w-4" />
             Add Expense
           </Button>
+        </div>
+      </div>
+
+      {/* Trip Header */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+          <h1 className="text-3xl font-bold">{selectedTrip.title}</h1>
+          <div className="flex items-center gap-4 text-muted-foreground mt-2">
+            <div className="flex items-center gap-1">
+              <MapPin className="h-4 w-4" />
+              <span>{selectedTrip.destination}</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <Calendar className="h-4 w-4" />
+              <span>{selectedTrip.startDate} - {selectedTrip.endDate}</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <Users className="h-4 w-4" />
+              <span>{selectedTrip.participants} people</span>
+            </div>
+            <Badge variant={
+              selectedTrip.status === 'upcoming' ? 'default' : 
+              selectedTrip.status === 'planned' ? 'outline' : 'secondary'
+            }>
+              {selectedTrip.status === 'upcoming' ? 'Upcoming' : 
+               selectedTrip.status === 'planned' ? 'Planned' : 'Draft'}
+            </Badge>
+          </div>
         </div>
       </div>
 
