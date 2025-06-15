@@ -7,8 +7,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { MapPin, Calendar, Star, Settings, Edit, LogOut, LogIn, UserPlus } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const ProfilePage: React.FC = () => {
+  const navigate = useNavigate();
   // Mock authentication state - replace with real auth later
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loginForm, setLoginForm] = useState({ email: '', password: '' });
@@ -52,6 +54,10 @@ const ProfilePage: React.FC = () => {
     console.log(`Login with ${provider}`);
     // Mock social login - replace with real social authentication
     setIsAuthenticated(true);
+  };
+
+  const handleEditProfile = () => {
+    navigate('/profile/edit');
   };
 
   if (!isAuthenticated) {
@@ -210,7 +216,7 @@ const ProfilePage: React.FC = () => {
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold">Profile</h1>
         <div className="flex gap-2">
-          <Button variant="outline" className="gap-2">
+          <Button variant="outline" onClick={handleEditProfile} className="gap-2">
             <Edit className="h-4 w-4" />
             Edit Profile
           </Button>

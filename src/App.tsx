@@ -12,6 +12,7 @@ import TripCreationPage from "./pages/TripCreationPage";
 import ItineraryPage from "./pages/ItineraryPage";
 import BudgetPage from "./pages/BudgetPage";
 import ProfilePage from "./pages/ProfilePage";
+import EditProfilePage from "./pages/EditProfilePage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -39,6 +40,7 @@ const App = () => (
                   <Route path="/itinerary" element={<ItineraryPage />} />
                   <Route path="/budget" element={<BudgetPage />} />
                   <Route path="/profile" element={<ProfilePage />} />
+                  <Route path="/profile/edit" element={<EditProfilePage />} />
                   <Route path="/settings" element={<div className="p-6"><h1 className="text-2xl font-bold">Settings - Coming Soon</h1></div>} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
