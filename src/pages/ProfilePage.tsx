@@ -16,7 +16,9 @@ import {
   LogOut,
   Plane,
   DollarSign,
-  Camera
+  Camera,
+  Facebook,
+  Instagram
 } from 'lucide-react';
 
 const ProfilePage: React.FC = () => {
@@ -42,9 +44,10 @@ const ProfilePage: React.FC = () => {
     upcomingTrips: 2
   };
 
-  const handleLogin = () => {
+  const handleLogin = (provider?: string) => {
     // Simulate login success
     setIsAuthenticated(true);
+    console.log(`Signed in with ${provider || 'email'}`);
     
     // If user came from another page, redirect them back
     if (redirectTo && redirectTo !== '/profile') {
@@ -75,7 +78,7 @@ const ProfilePage: React.FC = () => {
           </CardHeader>
           <CardContent className="space-y-4">
             <Button 
-              onClick={handleLogin} 
+              onClick={() => handleLogin('email')} 
               className="w-full" 
               size="lg"
             >
@@ -83,7 +86,7 @@ const ProfilePage: React.FC = () => {
               Sign In with Email
             </Button>
             <Button 
-              onClick={handleLogin} 
+              onClick={() => handleLogin('google')} 
               variant="outline" 
               className="w-full" 
               size="lg"
@@ -95,6 +98,24 @@ const ProfilePage: React.FC = () => {
                 <path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
               </svg>
               Sign In with Google
+            </Button>
+            <Button 
+              onClick={() => handleLogin('facebook')} 
+              variant="outline" 
+              className="w-full" 
+              size="lg"
+            >
+              <Facebook className="h-4 w-4 mr-2" />
+              Sign In with Facebook
+            </Button>
+            <Button 
+              onClick={() => handleLogin('instagram')} 
+              variant="outline" 
+              className="w-full" 
+              size="lg"
+            >
+              <Instagram className="h-4 w-4 mr-2" />
+              Sign In with Instagram
             </Button>
             {redirectTo && redirectTo !== '/profile' && (
               <p className="text-sm text-muted-foreground text-center">
