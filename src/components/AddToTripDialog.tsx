@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Plus, Calendar, MapPin, Users, Send, Bot, User } from 'lucide-react';
-import { TripIdea, enhancedTrips } from '@/utils/mockData';
+import { TripIdea, currentTrips, upcomingTrips } from '@/utils/mockData';
 
 interface Message {
   id: string;
@@ -90,7 +90,7 @@ export const AddToTripDialog: React.FC<AddToTripDialogProps> = ({
 
   if (!tripIdea) return null;
 
-  const existingTrips = enhancedTrips.filter(trip => trip.status !== 'past');
+  const existingTrips = [...currentTrips, ...upcomingTrips];
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
