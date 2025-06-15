@@ -1,19 +1,16 @@
 
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Calendar as CalendarComponent } from '@/components/ui/calendar';
-import { Plus, Pin, PinOff } from 'lucide-react';
-import { EnhancedTripCard } from '@/components/EnhancedTripCard';
-import { mockTrips, savedLocations, type EnhancedTrip } from '@/utils/mockData';
+import { Plus } from 'lucide-react';
+import { mockTrips, type EnhancedTrip } from '@/utils/mockData';
 import { PageLayout } from '@/components/PageLayout';
 import { PageHeader } from '@/components/PageHeader';
 import { TripViewControls } from '@/components/TripViewControls';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Filter, Grid, List, Pin as PinIcon, PinOff as PinOffIcon, Search, Bot } from 'lucide-react';
+import { TripCardGrid } from '@/components/TripCardGrid';
+import { SavedLocationsView } from '@/components/SavedLocationsView';
+import { CalendarView } from '@/components/CalendarView';
 
 // Enhanced mock data with progress indicators - updated to 2025 dates
 const enhancedTrips = {
@@ -96,14 +93,6 @@ const MyTripsPage: React.FC = () => {
   const [filterBy, setFilterBy] = useState('all');
   const [pinnedTrips, setPinnedTrips] = useState<number[]>([1]);
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', { 
-      month: 'short', 
-      day: 'numeric',
-      year: 'numeric'
-    });
-  };
-
   const handleViewItinerary = (tripId: number) => {
     navigate(`/itinerary?tripId=${tripId}`);
   };
@@ -126,111 +115,6 @@ const MyTripsPage: React.FC = () => {
 
   // Get all trips for calendar view
   const allTrips = [...enhancedTrips.current, ...enhancedTrips.upcoming, ...enhancedTrips.past];
-  
-  // Create events for calendar from trip data
-  const getTripEvents = (date: Date) => {
-    console.log('Checking date:', date.toDateString());
-    const eventsOnDate = allTrips.filter(trip => {
-      const startDate = new Date(trip.startDate);
-      const endDate = new Date(trip.endDate);
-      console.log(`Trip ${trip.title}: ${startDate.toDateString()} to ${endDate.toDateString()}`);
-      const isInRange = date >= startDate && date <= endDate;
-      console.log(`Date ${date.toDateString()} in range for ${trip.title}:`, isInRange);
-      return isInRange;
-    });
-    console.log('Events on date:', eventsOnDate);
-    return eventsOnDate;
-  };
-
-  // Get all trip dates for calendar highlighting
-  const getTripDates = () => {
-    const dates: Date[] = [];
-    console.log('All trips for calendar:', allTrips);
-    allTrips.forEach(trip => {
-      console.log(`Processing trip: ${trip.title}, dates: ${trip.startDate} to ${trip.endDate}`);
-      const start = new Date(trip.startDate);
-      const end = new Date(trip.endDate);
-      
-      // Add all dates between start and end
-      const currentDate = new Date(start);
-      while (currentDate <= end) {
-        dates.push(new Date(currentDate));
-        currentDate.setDate(currentDate.getDate() + 1);
-      }
-    });
-    console.log('Generated trip dates:', dates.map(d => d.toDateString()));
-    return dates;
-  };
-
-  const tripDates = getTripDates();
-
-  const TripCardGrid = ({ trips }: { trips: any[] }) => {
-    const pinnedTripsData = trips.filter(trip => pinnedTrips.includes(trip.id));
-    const unpinnedTrips = trips.filter(trip => !pinnedTrips.includes(trip.id));
-
-    return (
-      <div className="space-y-4">
-        {pinnedTripsData.length > 0 && (
-          <div>
-            <div className="flex items-center gap-2 mb-3">
-              <Pin className="h-4 w-4 text-primary" />
-              <span className="text-sm font-medium text-muted-foreground">Pinned</span>
-            </div>
-            <div className={`grid gap-4 ${viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1'}`}>
-              {pinnedTripsData.map(trip => (
-                <div key={trip.id} className="relative">
-                  <EnhancedTripCard
-                    trip={trip}
-                    onViewItinerary={handleViewItinerary}
-                    onViewBudget={handleViewBudget}
-                    onEditTrip={handleEditTrip}
-                  />
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className="absolute top-2 left-2 w-8 h-8 p-0 bg-background/80 hover:bg-background"
-                    onClick={() => togglePin(trip.id)}
-                  >
-                    <PinOff className="h-3 w-3" />
-                  </Button>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {unpinnedTrips.length > 0 && (
-          <div>
-            {pinnedTripsData.length > 0 && (
-              <div className="flex items-center gap-2 mb-3 mt-6">
-                <span className="text-sm font-medium text-muted-foreground">Other Trips</span>
-              </div>
-            )}
-            <div className={`grid gap-4 ${viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1'}`}>
-              {unpinnedTrips.map(trip => (
-                <div key={trip.id} className="relative">
-                  <EnhancedTripCard
-                    trip={trip}
-                    onViewItinerary={handleViewItinerary}
-                    onViewBudget={handleViewBudget}
-                    onEditTrip={handleEditTrip}
-                  />
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className="absolute top-2 left-2 w-8 h-8 p-0 bg-background/80 hover:bg-background opacity-0 group-hover:opacity-100 transition-opacity"
-                    onClick={() => togglePin(trip.id)}
-                  >
-                    <Pin className="h-3 w-3" />
-                  </Button>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
-    );
-  };
 
   return (
     <PageLayout>
@@ -268,7 +152,15 @@ const MyTripsPage: React.FC = () => {
 
           <TabsContent value="current" className="space-y-4">
             {enhancedTrips.current.length > 0 ? (
-              <TripCardGrid trips={enhancedTrips.current} />
+              <TripCardGrid
+                trips={enhancedTrips.current}
+                pinnedTrips={pinnedTrips}
+                viewMode={viewMode}
+                onViewItinerary={handleViewItinerary}
+                onViewBudget={handleViewBudget}
+                onEditTrip={handleEditTrip}
+                onTogglePin={togglePin}
+              />
             ) : (
               <div className="text-center p-12">
                 <h3 className="text-lg font-medium mb-2">No current trips</h3>
@@ -282,104 +174,41 @@ const MyTripsPage: React.FC = () => {
           </TabsContent>
 
           <TabsContent value="upcoming" className="space-y-4">
-            <TripCardGrid trips={enhancedTrips.upcoming} />
+            <TripCardGrid
+              trips={enhancedTrips.upcoming}
+              pinnedTrips={pinnedTrips}
+              viewMode={viewMode}
+              onViewItinerary={handleViewItinerary}
+              onViewBudget={handleViewBudget}
+              onEditTrip={handleEditTrip}
+              onTogglePin={togglePin}
+            />
           </TabsContent>
 
           <TabsContent value="past" className="space-y-4">
-            <TripCardGrid trips={enhancedTrips.past} />
+            <TripCardGrid
+              trips={enhancedTrips.past}
+              pinnedTrips={pinnedTrips}
+              viewMode={viewMode}
+              onViewItinerary={handleViewItinerary}
+              onViewBudget={handleViewBudget}
+              onEditTrip={handleEditTrip}
+              onTogglePin={togglePin}
+            />
           </TabsContent>
 
           <TabsContent value="saved" className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {savedLocations.map(location => (
-                  <Card key={location.id}>
-                    <CardContent className="p-4">
-                      <h3 className="font-semibold">{location.name}</h3>
-                      <p className="text-sm text-muted-foreground">{location.category}</p>
-                      <p className="text-xs text-muted-foreground mt-2">
-                        Saved {formatDate(location.savedDate)}
-                      </p>
-                      <Button size="sm" className="w-full mt-3">
-                        Add to Trip
-                      </Button>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
+            <SavedLocationsView />
           </TabsContent>
 
           <TabsContent value="calendar" className="space-y-4">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Trip Calendar</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <CalendarComponent
-                      mode="single"
-                      selected={selectedDate}
-                      onSelect={setSelectedDate}
-                      className="rounded-md border pointer-events-auto"
-                      modifiers={{
-                        tripDay: (date) => 
-                          tripDates.some(tripDate => 
-                            tripDate.toDateString() === date.toDateString()
-                          )
-                      }}
-                      modifiersStyles={{
-                        tripDay: { 
-                          backgroundColor: 'hsl(var(--primary))', 
-                          color: 'white',
-                          fontWeight: 'bold'
-                        },
-                      }}
-                    />
-                  </CardContent>
-                </Card>
-                
-                <Card>
-                  <CardHeader>
-                    <CardTitle>
-                      {selectedDate ? `Trips on ${selectedDate.toLocaleDateString()}` : 'Select a date'}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    {selectedDate ? (
-                      <div className="space-y-3">
-                        {getTripEvents(selectedDate).map(trip => (
-                          <div key={trip.id} className="p-3 border rounded-lg">
-                            <h4 className="font-semibold">{trip.title}</h4>
-                            <p className="text-sm text-muted-foreground">{trip.destination}</p>
-                            <p className="text-xs text-muted-foreground mt-1">
-                              {formatDate(trip.startDate)} - {formatDate(trip.endDate)}
-                            </p>
-                            <div className="flex gap-2 mt-2">
-                              <Button 
-                                size="sm" 
-                                onClick={() => handleViewItinerary(trip.id)}
-                              >
-                                View Itinerary
-                              </Button>
-                              <Button 
-                                size="sm" 
-                                variant="outline"
-                                onClick={() => handleViewBudget(trip.id)}
-                              >
-                                Budget
-                              </Button>
-                            </div>
-                          </div>
-                        ))}
-                        {getTripEvents(selectedDate).length === 0 && (
-                          <p className="text-muted-foreground">No trips on this date</p>
-                        )}
-                      </div>
-                    ) : (
-                      <p className="text-muted-foreground">Select a date to see your trips</p>
-                    )}
-                  </CardContent>
-                </Card>
-              </div>
+            <CalendarView
+              selectedDate={selectedDate}
+              onSelectDate={setSelectedDate}
+              trips={allTrips}
+              onViewItinerary={handleViewItinerary}
+              onViewBudget={handleViewBudget}
+            />
           </TabsContent>
         </Tabs>
       </div>
