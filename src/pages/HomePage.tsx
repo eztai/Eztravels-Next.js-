@@ -1,17 +1,17 @@
-
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Plane, Calendar, DollarSign, Users, MapPin, Clock, CreditCard, LogIn } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { ExploreSection } from '@/components/ExploreSection';
 import { TravelAtAGlance } from '@/components/TravelAtAGlance';
 import SearchChatAssistant from '@/components/SearchChatAssistant';
 
 const HomePage: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   // Mock authentication state - replace with real auth later
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [chatContext, setChatContext] = useState('');
@@ -46,7 +46,8 @@ const HomePage: React.FC = () => {
   };
 
   const handleLogin = () => {
-    navigate('/profile');
+    // Pass the current route as state so we can redirect back after login
+    navigate('/profile', { state: { redirectTo: location.pathname } });
   };
 
   // Temporary login toggle for demo
