@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,12 +8,13 @@ import { Plane, Calendar, DollarSign, Users, MapPin, Clock, CreditCard, LogIn } 
 import { useNavigate } from 'react-router-dom';
 import { ExploreSection } from '@/components/ExploreSection';
 import { TravelAtAGlance } from '@/components/TravelAtAGlance';
-import ChatAssistant from '@/components/ChatAssistant';
+import SearchChatAssistant from '@/components/SearchChatAssistant';
 
 const HomePage: React.FC = () => {
   const navigate = useNavigate();
   // Mock authentication state - replace with real auth later
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [chatContext, setChatContext] = useState('');
 
   // Mock upcoming trips data
   const upcomingTrips = [
@@ -78,81 +80,14 @@ const HomePage: React.FC = () => {
         </Button>
       </div>
 
-      <Tabs defaultValue="explore" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="explore">Explore</TabsTrigger>
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-        </TabsList>
+      {/* Main Explore Section with Search Chat */}
+      <div className="space-y-6">
+        {/* AI Search Chat Assistant */}
+        <SearchChatAssistant onContextChange={setChatContext} />
         
-        <TabsContent value="explore" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Main Explore Section */}
-            <div className="lg:col-span-2">
-              <ExploreSection />
-            </div>
-            
-            {/* AI Chat Assistant */}
-            <div className="lg:col-span-1">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">AI Travel Assistant</CardTitle>
-                </CardHeader>
-                <CardContent className="p-0">
-                  <ChatAssistant />
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-        </TabsContent>
-        
-        <TabsContent value="overview" className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Active Trips</CardTitle>
-                <Plane className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">3</div>
-                <p className="text-xs text-muted-foreground">2 upcoming</p>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Budget</CardTitle>
-                <DollarSign className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">$12,450</div>
-                <p className="text-xs text-muted-foreground">Across all trips</p>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Countries Visited</CardTitle>
-                <MapPin className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">8</div>
-                <p className="text-xs text-muted-foreground">This year</p>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Travel Companions</CardTitle>
-                <Users className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">12</div>
-                <p className="text-xs text-muted-foreground">Friends & family</p>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-      </Tabs>
+        {/* Explore Results */}
+        <ExploreSection chatContext={chatContext} />
+      </div>
 
       {/* Authenticated user sections - only show when logged in */}
       {isAuthenticated && (
