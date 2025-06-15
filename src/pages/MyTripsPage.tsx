@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -8,9 +7,9 @@ import { mockTrips, type EnhancedTrip } from '@/utils/mockData';
 import { PageLayout } from '@/components/PageLayout';
 import { PageHeader } from '@/components/PageHeader';
 import { TripViewControls } from '@/components/TripViewControls';
-import { TripCardGrid } from '@/components/TripCardGrid';
 import { SavedLocationsView } from '@/components/SavedLocationsView';
 import { CalendarView } from '@/components/CalendarView';
+import { TripsTabContent } from '@/components/trips/TripsTabContent';
 
 // Enhanced mock data with progress indicators - updated to 2025 dates
 const enhancedTrips = {
@@ -151,30 +150,21 @@ const MyTripsPage: React.FC = () => {
           </div>
 
           <TabsContent value="current" className="space-y-4">
-            {enhancedTrips.current.length > 0 ? (
-              <TripCardGrid
-                trips={enhancedTrips.current}
-                pinnedTrips={pinnedTrips}
-                viewMode={viewMode}
-                onViewItinerary={handleViewItinerary}
-                onViewBudget={handleViewBudget}
-                onEditTrip={handleEditTrip}
-                onTogglePin={togglePin}
-              />
-            ) : (
-              <div className="text-center p-12">
-                <h3 className="text-lg font-medium mb-2">No current trips</h3>
-                <p className="text-sm text-muted-foreground mb-4">Start planning your next adventure</p>
-                <Button onClick={() => navigate('/trips/new')}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Create New Trip
-                </Button>
-              </div>
-            )}
+            <TripsTabContent
+              trips={enhancedTrips.current}
+              pinnedTrips={pinnedTrips}
+              viewMode={viewMode}
+              onViewItinerary={handleViewItinerary}
+              onViewBudget={handleViewBudget}
+              onEditTrip={handleEditTrip}
+              onTogglePin={togglePin}
+              emptyTitle="No current trips"
+              emptyDescription="Start planning your next adventure"
+            />
           </TabsContent>
 
           <TabsContent value="upcoming" className="space-y-4">
-            <TripCardGrid
+            <TripsTabContent
               trips={enhancedTrips.upcoming}
               pinnedTrips={pinnedTrips}
               viewMode={viewMode}
@@ -182,11 +172,13 @@ const MyTripsPage: React.FC = () => {
               onViewBudget={handleViewBudget}
               onEditTrip={handleEditTrip}
               onTogglePin={togglePin}
+              emptyTitle="No upcoming trips"
+              emptyDescription="Plan your next getaway"
             />
           </TabsContent>
 
           <TabsContent value="past" className="space-y-4">
-            <TripCardGrid
+            <TripsTabContent
               trips={enhancedTrips.past}
               pinnedTrips={pinnedTrips}
               viewMode={viewMode}
@@ -194,6 +186,8 @@ const MyTripsPage: React.FC = () => {
               onViewBudget={handleViewBudget}
               onEditTrip={handleEditTrip}
               onTogglePin={togglePin}
+              emptyTitle="No past trips"
+              emptyDescription="Your travel history will appear here"
             />
           </TabsContent>
 
