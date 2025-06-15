@@ -7,6 +7,7 @@ import { Plane, Calendar, DollarSign, Users, MapPin, Clock, CreditCard, LogIn } 
 import { useNavigate } from 'react-router-dom';
 import { ExploreSection } from '@/components/ExploreSection';
 import { TravelAtAGlance } from '@/components/TravelAtAGlance';
+import ChatAssistant from '@/components/ChatAssistant';
 
 const HomePage: React.FC = () => {
   const navigate = useNavigate();
@@ -63,6 +64,7 @@ const HomePage: React.FC = () => {
               </p>
             </div>
             <Button onClick={handleLogin} size="sm" className="bg-blue-600 hover:bg-blue-700">
+              <LogIn className="h-4 w-4 mr-2" />
               Sign In
             </Button>
           </div>
@@ -83,7 +85,24 @@ const HomePage: React.FC = () => {
         </TabsList>
         
         <TabsContent value="explore" className="space-y-6">
-          <ExploreSection />
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Main Explore Section */}
+            <div className="lg:col-span-2">
+              <ExploreSection />
+            </div>
+            
+            {/* AI Chat Assistant */}
+            <div className="lg:col-span-1">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">AI Travel Assistant</CardTitle>
+                </CardHeader>
+                <CardContent className="p-0">
+                  <ChatAssistant />
+                </CardContent>
+              </Card>
+            </div>
+          </div>
         </TabsContent>
         
         <TabsContent value="overview" className="space-y-6">
