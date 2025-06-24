@@ -1,18 +1,19 @@
+'use client'
 
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { User, Facebook, Instagram } from 'lucide-react';
 import { authProviders } from '@/utils/metadata';
-import { useLocation } from 'react-router-dom';
+import { useSearchParams } from 'next/navigation';
 
 interface AuthenticationFormProps {
   onLogin: (provider?: string) => void;
 }
 
 export const AuthenticationForm: React.FC<AuthenticationFormProps> = ({ onLogin }) => {
-  const location = useLocation();
-  const redirectTo = location.state?.redirectTo;
+  const searchParams = useSearchParams();
+  const redirectTo = searchParams.get('redirectTo');
 
   const getProviderIcon = (iconName: string) => {
     switch (iconName) {

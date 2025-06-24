@@ -1,6 +1,7 @@
+'use client'
 
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -8,7 +9,7 @@ import { Plane, Calendar, DollarSign, Clock, CreditCard } from 'lucide-react';
 import { mockUpcomingTrips, mockUserStats } from '@/utils/mockData';
 
 export const AuthenticatedSection: React.FC = () => {
-  const navigate = useNavigate();
+  const router = useRouter();
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', { 
@@ -26,7 +27,7 @@ export const AuthenticatedSection: React.FC = () => {
             <Plane className="h-6 w-6" />
             Your Upcoming Trips
           </h2>
-          <Button onClick={() => navigate('/trips')} variant="outline">
+          <Button onClick={() => router.push('/trips')} variant="outline">
             View All Trips
           </Button>
         </div>
@@ -58,7 +59,7 @@ export const AuthenticatedSection: React.FC = () => {
                 <div className="flex gap-2">
                   <Button 
                     size="sm" 
-                    onClick={() => navigate(`/trips/${trip.id}`)}
+                    onClick={() => router.push(`/trips/${trip.id}`)}
                     className="flex-1"
                   >
                     <Calendar className="h-4 w-4 mr-1" />
@@ -67,7 +68,7 @@ export const AuthenticatedSection: React.FC = () => {
                   <Button 
                     size="sm" 
                     variant="outline" 
-                    onClick={() => navigate('/itinerary')}
+                    onClick={() => router.push('/itinerary')}
                     className="flex-1"
                   >
                     <Clock className="h-4 w-4 mr-1" />

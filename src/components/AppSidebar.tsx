@@ -1,6 +1,8 @@
+'use client'
 
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { 
   Home, 
   MapPin, 
@@ -66,7 +68,7 @@ const secondaryItems = [
 ];
 
 export function AppSidebar() {
-  const location = useLocation();
+  const pathname = usePathname();
 
   return (
     <Sidebar className="border-r">
@@ -90,8 +92,8 @@ export function AppSidebar() {
             <SidebarMenu className="space-y-1">
               {navigationItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild className="h-auto py-3" isActive={location.pathname === item.url}>
-                    <Link to={item.url}>
+                  <SidebarMenuButton asChild className="h-auto py-3" isActive={pathname === item.url}>
+                    <Link href={item.url}>
                       <div className="flex items-center gap-3 w-full">
                         <item.icon className="h-5 w-5 shrink-0" />
                         <div className="flex flex-col items-start flex-1 min-w-0">
@@ -117,8 +119,8 @@ export function AppSidebar() {
             <SidebarMenu className="space-y-1">
               {secondaryItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild className="h-10" isActive={location.pathname === item.url}>
-                    <Link to={item.url}>
+                  <SidebarMenuButton asChild className="h-10" isActive={pathname === item.url}>
+                    <Link href={item.url}>
                       <item.icon className="h-4 w-4" />
                       <span className="text-sm">{item.title}</span>
                     </Link>

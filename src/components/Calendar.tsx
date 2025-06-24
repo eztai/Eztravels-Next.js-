@@ -1,3 +1,5 @@
+'use client'
+
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native-web';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
